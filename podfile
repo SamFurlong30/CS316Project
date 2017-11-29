@@ -1,0 +1,26 @@
+# Uncomment the next line to define a global platform for your project
+# platform :ios, '11.1'
+source 'https://github.com/CocoaPods/Specs.git'
+
+target 'Inclusive' do
+  # Comment the next line if you're not using Swift and don't want to use dynamic frameworks
+  use_frameworks!
+pod 'Firebase/Auth'
+  # Pods for Inclusive
+pod 'Firebase/Firestore'
+pod 'FacebookCore', :git => 'https://github.com/facebook/facebook-sdk-swift'
+pod 'FacebookLogin', :git => 'https://github.com/facebook/facebook-sdk-swift'
+pod 'FacebookShare', :git => 'https://github.com/facebook/facebook-sdk-swift'
+    pod 'QRCodeReader.swift', '~> 8.0.3'
+
+  target 'InclusiveTests' do
+    inherit! :search_paths
+    # Pods for testing
+  end
+
+  target 'InclusiveUITests' do
+    inherit! :search_paths
+    # Pods for testing
+  end
+
+end
