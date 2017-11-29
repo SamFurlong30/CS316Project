@@ -7,16 +7,21 @@
 //
 
 import UIKit
+import FirebaseAuth
+import FirebaseCore
+import FBSDKLoginKit
+import FacebookCore
+import FirebaseFirestore
 struct pCell{
     var partyName: String;
     var partyAddress: String;
     var partyDescription: String;
+    var documentID: String;
     
 }
-
 class PartyViewController: UIViewController,UITableViewDelegate, UITableViewDataSource {
     @IBOutlet weak var PartyBar: UIToolbar!
-      var items: [pCell] = [ pCell(partyName: "shit", partyAddress: "Fuck", partyDescription: "stuff")]
+    var items: [pCell] = []
     @IBOutlet weak var TableView: UITableView!
     
     @IBAction func AddPartyButtonAction(_ sender: Any) {
@@ -27,10 +32,30 @@ class PartyViewController: UIViewController,UITableViewDelegate, UITableViewData
                 let name = alertController.textFields![0].text
                 let address = alertController.textFields![1].text
                 let theme = alertController.textFields![2].text
-                let newCell: pCell = pCell(partyName: name!, partyAddress: address!, partyDescription: theme!)
+                var ref: DocumentReference? = nil
+                ref = db.collection("Parties").addDocument(data: [
+                    "Description" : name ?? "",
+                    "Location" : address ?? "",
+                    "Name" : theme ?? "",
+                    "startTime":"",
+                    "endTime":""
+                    ])
+                {err in
+                    if let err = err {
+                        
+                    }
+                    else{
+                        db.collection("Hosts").document(FBSDKAccessToken.current().userID).collection("Party").document(ref!.documentID).setData(["hostType":"Owner"])
+
+                    }
+                    
+                }
+                
+                let newCell: pCell = pCell(partyName: name!, partyAddress: address!, partyDescription: theme!, documentID: ref!.documentID)
                 self.items.append(newCell)
                 
                 self.TableView.reloadData()
+              
                 //store dis shit
                 
                 
@@ -70,21 +95,36 @@ class PartyViewController: UIViewController,UITableViewDelegate, UITableViewData
                 let name = alertController.textFields![0].text
                 let address = alertController.textFields![1].text
                 let theme = alertController.textFields![2].text
-                let newCell: pCell = pCell(partyName: name!, partyAddress: address!, partyDescription: theme!)
+                let newCell: pCell = pCell(partyName: name!, partyAddress: address!, partyDescription: theme!, documentID: myCell.documentID)
                 self.items.remove(at: row)
                 self.items.insert(newCell, at: 0)
                 
                 self.TableView.reloadData()
                 
                 //store dis shit
+                print("should be adding to database")
+                db.collection("Parties").document(myCell.documentID).setData([
+                    "Description" : newCell.partyDescription,
+                    "Location" : newCell.partyAddress,
+                    "Name" : newCell.partyName,
+                    "startTime":"",
+                    "endTime":""
+                    ])
+                {err in
+                    if let err = err {
+                        
+                    }
+                    else{
+                        }
+                    
+                }
+
                 
             } else {
                 // user did not fill field
             }
         }
-        
-        
-        
+    
         
         let cancelAction = UIAlertAction(title: "Cancel", style: .cancel) { (_) in }
         
@@ -97,6 +137,7 @@ class PartyViewController: UIViewController,UITableViewDelegate, UITableViewData
         alertController.addTextField { (textField) in
             textField.text = myCell.partyDescription
         }
+        
         
         self.present(alertController, animated: true, completion: nil)
         
@@ -153,7 +194,38 @@ class PartyViewController: UIViewController,UITableViewDelegate, UITableViewData
 override func viewDidLoad() {
         super.viewDidLoad()
     TableView.dataSource = self
+   // db.collection("Host/"+Auth.auth().currentUser!.uid).getDocuments(completion: )
+    db.collection("Hosts").document(FBSDKAccessToken.current().userID).collection("Party").getDocuments(){(querySnapshot, err) in
+        print("quering hosts")
+    if let err = err {
+        print(err)
+    
+    }else{
+        print("no error")
+        print(querySnapshot!.documents)
+        for document in querySnapshot!.documents{
+            print(document.documentID)
+              db.collection("Parties").document(document.documentID).getDocument{ (document,error) in
+                let description = document?.data()["Description"] as! String
+                let name = document?.data()["Location"] as! String
+                let location = document?.data()["Name"] as! String
+//                let endTime = document?.data()["endTime"] as! String
+//                let startTime = document?.data()["startTime"] as! String
+                self.items.append(pCell(partyName: name, partyAddress: location, partyDescription: description,documentID: document?.documentID as! String))
+                self.TableView.reloadData()
 
+
+
+
+                
+                
+            }
+            
+        }
+    }
+}
+    
+    
         // Do any additional setup after loading the view.
     }
 

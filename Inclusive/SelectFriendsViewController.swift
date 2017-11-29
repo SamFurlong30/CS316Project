@@ -27,7 +27,7 @@ class SelectFriendsViewController: UIViewController, UITableViewDelegate, UITabl
         let storyBoard : UIStoryboard = UIStoryboard(name: "Main", bundle:nil)
         let nextViewController = storyBoard.instantiateViewController(withIdentifier: "PartyViewController") as UIViewController
         self.present(nextViewController, animated:true, completion:nil)
-        
+        //make backend call to add friends
         
         
     }
@@ -48,9 +48,19 @@ class SelectFriendsViewController: UIViewController, UITableViewDelegate, UITabl
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         switch (section) {
         case 0:
+            if(filteredItems.count == 0){
+                return 1
+            }
+            else{
             return filteredItems.count
+            }
         case 1:
+            if(filteredItems.count == 0){
+                return 1
+            }
+            else{
             return selectedItems.count
+            }
         default:
             return 0
         }
@@ -60,31 +70,42 @@ class SelectFriendsViewController: UIViewController, UITableViewDelegate, UITabl
         return 2
     }
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        print("selected");
-        print(indexPath.row)
+        if(indexPath.section == 0 && self.filteredItems.count>1){
         tableView.cellForRow(at: indexPath)?.isUserInteractionEnabled = false
         self.selectedItems.append(self.filteredItems[indexPath.row])
         self.filteredItems.remove(at: indexPath.row)
         self.items.remove(at: indexPath.row)
         self.FriendsTable.reloadData()
+        }
     }
    
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         print("added row")
         switch (indexPath.section) {
         case 0:
+            if(indexPath.row < filteredItems.count){
             let cell:FriendNotInvitedCell = tableView.dequeueReusableCell(withIdentifier: "FriendNotInvitedCell", for: indexPath) as! FriendNotInvitedCell
             let currentFriend = filteredItems[indexPath.row]
             cell.textLabel!.text = currentFriend.name
             cell.tag = indexPath.row
             return cell
+            }
+            else{
+                return UITableViewCell()
+            }
         case 1:
+            if(indexPath.row < selectedItems.count){
+
             let cell: FriendInvitedCell = tableView.dequeueReusableCell(withIdentifier: "FriendInvitedCell", for: indexPath) as!FriendInvitedCell
             let currentFriend = selectedItems[indexPath.row]
             cell.textLabel!.text = currentFriend.name + "is invited"
             cell.tag = indexPath.row
-        
-            return cell
+                return cell
+
+            }
+            else{
+                return UITableViewCell()
+            }
         default:
             let cell: FriendInvitedCell = tableView.dequeueReusableCell(withIdentifier: "FriendInvitedCell", for: indexPath) as! FriendInvitedCell
             let currentFriend = selectedItems[indexPath.row]
@@ -151,20 +172,22 @@ class SelectFriendsViewController: UIViewController, UITableViewDelegate, UITabl
                     
                     
                 }
-                
+
                 
             }
         }
-        // Do any additional setup after loading the view.
-        // get data
-        
+        //do a firebase query for all of the added friends
+        //append all of the added friends to addedItems
+        //remove all of the added friends from filtered items 
+      
     }
     @IBOutlet weak var InviteBar: UIToolbar!
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
     switch(section){
         
     case 0:
-        return InviteBar
+        return InviteBar.vie
+        
     default:
         return nil
     }
@@ -175,6 +198,7 @@ class SelectFriendsViewController: UIViewController, UITableViewDelegate, UITabl
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
+        
         // Dispose of any resources that can be recreated.
     }
     

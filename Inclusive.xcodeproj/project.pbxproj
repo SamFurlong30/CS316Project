@@ -170,7 +170,6 @@
 				BCA770791FC22AD900085726 /* Inclusive */,
 				BC74FC571FBF93B7008459FF /* Main.storyboard */,
 				BC74FC5A1FBF93B7008459FF /* Assets.xcassets */,
-				BCA7707C1FC22AD900085726 /* Assets.xcassets */,
 				BC74FC5C1FBF93B7008459FF /* LaunchScreen.storyboard */,
 				BC74FC5F1FBF93B7008459FF /* Info.plist */,
 			);
@@ -211,6 +210,7 @@
 				BC32D7881FCBB00A0092FD9F /* SelectFriendsViewController.swift */,
 				BC32D78A1FCD03E10092FD9F /* FriendNotInvitedCell.swift */,
 				BC32D78C1FCD13070092FD9F /* FriendInvitedCell.swift */,
+				BCA7707C1FC22AD900085726 /* Assets.xcassets */,
 			);
 			name = Inclusive;
 			sourceTree = "<group>";

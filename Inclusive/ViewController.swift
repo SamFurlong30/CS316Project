@@ -25,23 +25,25 @@ class ViewController: UIViewController, FBSDKLoginButtonDelegate{
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        let credential = FacebookAuthProvider.credential(withAccessToken: FBSDKAccessToken.current().tokenString)
 
         if(FBSDKAccessToken.current() != nil){
+            let credential = FacebookAuthProvider.credential(withAccessToken: FBSDKAccessToken.current().tokenString)
+
             Auth.auth().signIn(with: credential) { (user, error) in
                 if let error = error {
                     // ...
-                    
+
                     print("my error/n/n/n/n/")
                     return
                 }
+                
                 let storyBoard : UIStoryboard = UIStoryboard(name: "Main", bundle:nil)
                 let nextViewController = storyBoard.instantiateViewController(withIdentifier: "PartyViewController") as UIViewController
                 self.present(nextViewController, animated:true, completion:nil)
                 print("should present new view controller")
                 print("signed in/n/n/n/n/n")
             }
-            
+
             }
         else{
         let loginButton = FBSDKLoginButton()
@@ -49,7 +51,7 @@ class ViewController: UIViewController, FBSDKLoginButtonDelegate{
         loginButton.center = view.center
         loginButton.delegate = self
         view.addSubview(loginButton)
-        }
+       }
         
     }
 
@@ -79,6 +81,8 @@ class ViewController: UIViewController, FBSDKLoginButtonDelegate{
                     print("my error/n/n/n/n/")
                     return
                 }
+                var name = Auth.auth().currentUser!.uid         
+                
                 print("signed in/n/n/n/n/n")
                     }
             let storyBoard : UIStoryboard = UIStoryboard(name: "Main", bundle:nil)
