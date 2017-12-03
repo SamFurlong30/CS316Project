@@ -12,140 +12,115 @@ import FirebaseCore
 import FBSDKLoginKit
 import FacebookCore
 import FirebaseFirestore
+var isInviteMode: Bool = false
+var currentDocument: String = ""
 struct pCell{
     var partyName: String;
     var partyAddress: String;
     var partyDescription: String;
     var documentID: String;
+    var startHour: Int;
+    var startMinute: Int;
+    var endHour: Int;
+    var endMinute: Int;
+    var date: String;
+
     
 }
-class PartyViewController: UIViewController,UITableViewDelegate, UITableViewDataSource {
+class PartyViewController: UIViewController,UITableViewDelegate, UITableViewDataSource,UIPopoverPresentationControllerDelegate {
+    var InputPopover: PartyInputViewController!
+    var datepicker: UIDatePicker = UIDatePicker()
     @IBOutlet weak var PartyBar: UIToolbar!
     var items: [pCell] = []
     @IBOutlet weak var TableView: UITableView!
-    
     @IBAction func AddPartyButtonAction(_ sender: Any) {
-        let alertController = UIAlertController(title: "Party Info", message: "Please give us some info about your party:", preferredStyle: .alert)
-        let confirmAction = UIAlertAction(title: "Confirm", style: .default) { (_) in
-            if (alertController.textFields![0] as? UITextField) != nil {
-                // store your data
-                let name = alertController.textFields![0].text
-                let address = alertController.textFields![1].text
-                let theme = alertController.textFields![2].text
-                var ref: DocumentReference? = nil
-                ref = db.collection("Parties").addDocument(data: [
-                    "Description" : name ?? "",
-                    "Location" : address ?? "",
-                    "Name" : theme ?? "",
-                    "startTime":"",
-                    "endTime":""
-                    ])
-                {err in
-                    if let err = err {
-                        
-                    }
-                    else{
-                        db.collection("Hosts").document(FBSDKAccessToken.current().userID).collection("Party").document(ref!.documentID).setData(["hostType":"Owner"])
-
-                    }
-                    
-                }
-                
-                let newCell: pCell = pCell(partyName: name!, partyAddress: address!, partyDescription: theme!, documentID: ref!.documentID)
-                self.items.append(newCell)
-                
-                self.TableView.reloadData()
-              
-                //store dis shit
-                
-                
-                
-            } else {
-                // user did not fill field
-            }
-        }
-        
-        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel) { (_) in }
-        
-        alertController.addTextField { (textField) in
-            textField.placeholder = "Party Name"
-        }
-        alertController.addTextField { (textField) in
-            textField.placeholder = "Party Address"
-        }
-        alertController.addTextField { (textField) in
-            textField.placeholder = "Party Description/Theme"
-        }
-        
-        self.present(alertController, animated: true, completion: nil)
-        
-        
-        
-        alertController.addAction(confirmAction)
-        alertController.addAction(cancelAction)
+        presentAndRecordInput(act:0, send: 0)
     }
+    func presentAndRecordInput(act: Int, send: Int){
+      
+        let storyboard : UIStoryboard = UIStoryboard(name: "Main", bundle: nil)
+        InputPopover = storyboard.instantiateViewController(withIdentifier: "PartyInput") as! PartyInputViewController
+        InputPopover.modalPresentationStyle = .popover
+        let popover = InputPopover.popoverPresentationController!
+        popover.delegate = self
+        popover.permittedArrowDirections = .up
+        
+        present(InputPopover, animated: true, completion: nil)
+        if(act == 0){
+            //initial
+            InputPopover.DoneButton.addTarget(self, action: #selector(doneActionForInitial), for: .touchUpInside)
+        }
+        else{
+            InputPopover.InviteInput.text = items[send].partyDescription
+            InputPopover.NameInput.text = items[send].partyName
+            InputPopover.LocationInput.text =  items[send].partyAddress
+            InputPopover.DoneButton.tag = send
+        
+            InputPopover.DoneButton.addTarget(self, action: #selector(doneActionForEdit), for: .touchUpInside)
+            //non initial
+        }
+
+    }
+    @objc func doneActionForInitial(sender: UIButton){
+      
+       
+        let name:String = InputPopover.NameInput.text!
+        let starDate = InputPopover.Date
+        
+        let endTime = InputPopover.EndTime
+        let components = Calendar.current.dateComponents([.hour, .minute], from: endTime!)
+        let endhour = components.hour
+        let endminute =  components.minute
+        print(endhour)
+        print(endminute)
+        let startTime = InputPopover.StartTime
+        let component = Calendar.current.dateComponents([.hour, .minute], from: startTime!)
+        let starthour = component.hour
+        let startminute = component.minute
+        let location:String = InputPopover.LocationInput.text!
+        let desc:String = InputPopover.InviteInput.text!
+        var nCell:pCell = pCell(partyName: name, partyAddress: location, partyDescription: desc, documentID: "", startHour: starthour!, startMinute: startminute!, endHour: endhour!, endMinute: endminute!,  date: starDate!)
+        let ref = db.collection("Hosts").document(FBSDKAccessToken.current().userID).collection("Party").addDocument(data: ["hostType":"Owner"])
+        let did = ref.documentID
+        db.collection("Parties").document(did).setData(["Name": nCell.partyName, "Location":nCell.partyAddress, "Description" : nCell.partyDescription])
+        nCell.documentID = did
+        items.append(nCell)
+        self.TableView.reloadData()
+        
+    }
+  
+    @objc func doneActionForEdit(sender: UIButton){
+        let name:String = InputPopover.NameInput.text!
+        let starDate = InputPopover.Date
+        
+        let endTime = InputPopover.EndTime
+        let components = Calendar.current.dateComponents([.hour, .minute], from: endTime!)
+        let endhour = components.hour
+        let endminute =  components.minute
+        
+        let startTime = InputPopover.StartTime
+        let component = Calendar.current.dateComponents([.hour, .minute], from: startTime!)
+        let starthour = component.hour
+        let startminute = component.minute
+        let location:String = InputPopover.LocationInput.text!
+        let desc:String = InputPopover.InviteInput.text!
+         var nCell:pCell = pCell(partyName: name, partyAddress: location, partyDescription: desc, documentID: "", startHour: starthour!, startMinute: startminute!, endHour: endhour!, endMinute: endminute!,  date: starDate!)
+    db.collection("Parties").document(items[sender.tag].documentID).setData(["Name": nCell.partyName, "Location":nCell.partyAddress, "Description" : nCell.partyDescription])
+        nCell.documentID = items[sender.tag].documentID
+        items.remove(at: sender.tag)
+        items.append(nCell)
+        self.TableView.reloadData()
+    
+
+    }
+    func addPartyToDataBase(cell:pCell){
+        
+        
+    }
+  
     @objc
     func editTapped(sender: UIButton){
-        let row = sender.tag
-        var myCell: pCell = items[row]
-        let alertController = UIAlertController(title: "Party Info", message: "Please give us some info about your party:", preferredStyle: .alert)
-        let confirmAction = UIAlertAction(title: "Confirm", style: .default) { (_) in
-            if (alertController.textFields![0] as? UITextField) != nil {
-                // store your data
-                let name = alertController.textFields![0].text
-                let address = alertController.textFields![1].text
-                let theme = alertController.textFields![2].text
-                let newCell: pCell = pCell(partyName: name!, partyAddress: address!, partyDescription: theme!, documentID: myCell.documentID)
-                self.items.remove(at: row)
-                self.items.insert(newCell, at: 0)
-                
-                self.TableView.reloadData()
-                
-                //store dis shit
-                print("should be adding to database")
-                db.collection("Parties").document(myCell.documentID).setData([
-                    "Description" : newCell.partyDescription,
-                    "Location" : newCell.partyAddress,
-                    "Name" : newCell.partyName,
-                    "startTime":"",
-                    "endTime":""
-                    ])
-                {err in
-                    if let err = err {
-                        
-                    }
-                    else{
-                        }
-                    
-                }
-
-                
-            } else {
-                // user did not fill field
-            }
-        }
-    
-        
-        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel) { (_) in }
-        
-        alertController.addTextField { (textField) in
-            textField.text = myCell.partyName
-        }
-        alertController.addTextField { (textField) in
-            textField.text = myCell.partyAddress
-        }
-        alertController.addTextField { (textField) in
-            textField.text = myCell.partyDescription
-        }
-        
-        
-        self.present(alertController, animated: true, completion: nil)
-        
-        
-        
-        alertController.addAction(confirmAction)
-        alertController.addAction(cancelAction)
-        
+        presentAndRecordInput(act:1, send: sender.tag)
     }
     @objc
     func verifyTapped(sender: UIButton){
@@ -156,6 +131,8 @@ class PartyViewController: UIViewController,UITableViewDelegate, UITableViewData
     }
     @objc
     func inviteTapped(sender: UIButton){
+        isInviteMode = true
+        currentDocument = items[sender.tag].documentID
         
         let storyBoard : UIStoryboard = UIStoryboard(name: "Main", bundle:nil)
         let nextViewController = storyBoard.instantiateViewController(withIdentifier: "SelectFriendsViewController") as UIViewController
@@ -187,8 +164,17 @@ class PartyViewController: UIViewController,UITableViewDelegate, UITableViewData
         cell.EditParty.tag = indexPath.row
         cell.VerifyParty.tag = indexPath.row
         cell.Invite.tag = indexPath.row
-        
+    cell.AddBouncers.addTarget(self,action:#selector(addBouncers), for: UIControlEvents.touchUpInside)
+        cell.AddBouncers.tag = indexPath.row
         return cell as UITableViewCell;
+    }
+    @objc func addBouncers(sender: UIButton){
+        isInviteMode = false
+        currentDocument = items[sender.tag].documentID
+        
+        let storyBoard : UIStoryboard = UIStoryboard(name: "Main", bundle:nil)
+        let nextViewController = storyBoard.instantiateViewController(withIdentifier: "SelectFriendsViewController") as UIViewController
+        self.present(nextViewController, animated:true, completion:nil)
     }
     
 override func viewDidLoad() {
@@ -201,28 +187,25 @@ override func viewDidLoad() {
         print(err)
     
     }else{
-        print("no error")
-        print(querySnapshot!.documents)
         for document in querySnapshot!.documents{
-            print(document.documentID)
+            print(document)
+
+            
               db.collection("Parties").document(document.documentID).getDocument{ (document,error) in
                 let description = document?.data()["Description"] as! String
                 let name = document?.data()["Location"] as! String
                 let location = document?.data()["Name"] as! String
 //                let endTime = document?.data()["endTime"] as! String
 //                let startTime = document?.data()["startTime"] as! String
-                self.items.append(pCell(partyName: name, partyAddress: location, partyDescription: description,documentID: document?.documentID as! String))
-                self.TableView.reloadData()
-
-
-
-
+                self.items.append(pCell(partyName: name, partyAddress: location, partyDescription: description,documentID: document?.documentID as! String, startHour: 0, startMinute: 0, endHour: 0, endMinute: 0, date: " "))
                 
+                self.TableView.reloadData()
                 
             }
             
         }
     }
+        //write query to get parties for bouncers 
 }
     
     

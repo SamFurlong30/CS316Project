@@ -10,6 +10,8 @@ import UIKit
 
 class FriendInvitedCell: UITableViewCell {
 
+    @IBOutlet weak var NameLabel: UILabel!
+    @IBOutlet weak var DeleteInviteAction: UIButton!
     override func awakeFromNib() {
         super.awakeFromNib()
         // Initialization code

@@ -10,11 +10,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Inclusive/PartyViewController.swift"
-            timestampString = "533620330.539796"
+            timestampString = "533792492.897055"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "173"
-            endingLineNumber = "173"
+            startingLineNumber = "150"
+            endingLineNumber = "150"
             landmarkName = "numberOfSections(in:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -26,7 +26,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Inclusive/PartyCell.swift"
-            timestampString = "533619415.710484"
+            timestampString = "533782136.147416"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "6"
@@ -42,7 +42,7 @@
                   moduleName = "Inclusive"
                   usesParentBreakpointCondition = "Yes"
                   urlString = "file:///Users/SamFurlong/Desktop/Inclusive/Inclusive/PartyCell.swift"
-                  timestampString = "533444120.514329"
+                  timestampString = "533771342.99168"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
                   startingLineNumber = "0"
@@ -57,7 +57,7 @@
                   moduleName = "Inclusive"
                   usesParentBreakpointCondition = "Yes"
                   urlString = "file:///Users/SamFurlong/Desktop/Inclusive/Inclusive/PartyCell.swift"
-                  timestampString = "533444120.516876"
+                  timestampString = "533771342.994334"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
                   startingLineNumber = "0"
@@ -72,7 +72,7 @@
                   moduleName = "Inclusive"
                   usesParentBreakpointCondition = "Yes"
                   urlString = "file:///Users/SamFurlong/Desktop/Inclusive/Inclusive/PartyCell.swift"
-                  timestampString = "533444120.519558"
+                  timestampString = "533771342.997361"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
                   startingLineNumber = "13"
@@ -87,7 +87,7 @@
                   moduleName = "Inclusive"
                   usesParentBreakpointCondition = "Yes"
                   urlString = "file:///Users/SamFurlong/Desktop/Inclusive/Inclusive/PartyCell.swift"
-                  timestampString = "533444120.52282"
+                  timestampString = "533771343.000194"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
                   startingLineNumber = "0"
@@ -102,7 +102,7 @@
                   moduleName = "Inclusive"
                   usesParentBreakpointCondition = "Yes"
                   urlString = "file:///Users/SamFurlong/Desktop/Inclusive/Inclusive/PartyCell.swift"
-                  timestampString = "533444120.525382"
+                  timestampString = "533771343.002856"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
                   startingLineNumber = "13"
@@ -119,11 +119,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Inclusive/PartyCell.swift"
-            timestampString = "533619415.710695"
+            timestampString = "533782136.147559"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "19"
-            endingLineNumber = "19"
+            startingLineNumber = "24"
+            endingLineNumber = "24"
             landmarkName = "PartyCell"
             landmarkType = "3">
             <Locations>
@@ -197,12 +197,121 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Inclusive/PartyViewController.swift"
-            timestampString = "533620330.539962"
+            timestampString = "533792492.897504"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "169"
-            endingLineNumber = "169"
+            startingLineNumber = "146"
+            endingLineNumber = "146"
             landmarkName = "tableView(_:numberOfRowsInSection:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Inclusive/PartyCell.swift"
+            timestampString = "533782136.147839"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "5"
+            endingLineNumber = "5"
+            landmarkName = "unknown"
+            landmarkType = "0">
+            <Locations>
+               <Location
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Inclusive.PartyCell.__deallocating_deinit"
+                  moduleName = "Inclusive"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/SamFurlong/Desktop/Inclusive/Inclusive/PartyCell.swift"
+                  timestampString = "533771364.97345"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "0"
+                  endingLineNumber = "0"
+                  offsetFromSymbolStart = "4">
+               </Location>
+               <Location
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Inclusive.PartyCell.__allocating_init(style: __C.UITableViewCellStyle, reuseIdentifier: Swift.Optional&lt;Swift.String&gt;) -&gt; Inclusive.PartyCell"
+                  moduleName = "Inclusive"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/SamFurlong/Desktop/Inclusive/Inclusive/PartyCell.swift"
+                  timestampString = "533771364.976848"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "0"
+                  endingLineNumber = "0"
+                  offsetFromSymbolStart = "13">
+               </Location>
+               <Location
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Inclusive.PartyCell.init(style: __C.UITableViewCellStyle, reuseIdentifier: Swift.Optional&lt;Swift.String&gt;) -&gt; Inclusive.PartyCell"
+                  moduleName = "Inclusive"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/SamFurlong/Desktop/Inclusive/Inclusive/PartyCell.swift"
+                  timestampString = "533771364.980039"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "13"
+                  endingLineNumber = "13"
+                  offsetFromSymbolStart = "80">
+               </Location>
+               <Location
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Inclusive.PartyCell.__allocating_init(coder: __ObjC.NSCoder) -&gt; Swift.Optional&lt;Inclusive.PartyCell&gt;"
+                  moduleName = "Inclusive"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/SamFurlong/Desktop/Inclusive/Inclusive/PartyCell.swift"
+                  timestampString = "533771364.983113"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "0"
+                  endingLineNumber = "0"
+                  offsetFromSymbolStart = "4">
+               </Location>
+               <Location
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Inclusive.PartyCell.init(coder: __ObjC.NSCoder) -&gt; Swift.Optional&lt;Inclusive.PartyCell&gt;"
+                  moduleName = "Inclusive"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/SamFurlong/Desktop/Inclusive/Inclusive/PartyCell.swift"
+                  timestampString = "533771364.986223"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "13"
+                  endingLineNumber = "13"
+                  offsetFromSymbolStart = "46">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Inclusive/PartyInputViewController.swift"
+            timestampString = "533792492.897803"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "33"
+            endingLineNumber = "33"
+            landmarkName = "viewDidLoad()"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>

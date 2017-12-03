@@ -26,32 +26,33 @@ class ViewController: UIViewController, FBSDKLoginButtonDelegate{
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        if(FBSDKAccessToken.current() != nil){
-            let credential = FacebookAuthProvider.credential(withAccessToken: FBSDKAccessToken.current().tokenString)
-
-            Auth.auth().signIn(with: credential) { (user, error) in
-                if let error = error {
-                    // ...
-
-                    print("my error/n/n/n/n/")
-                    return
-                }
-                
-                let storyBoard : UIStoryboard = UIStoryboard(name: "Main", bundle:nil)
-                let nextViewController = storyBoard.instantiateViewController(withIdentifier: "PartyViewController") as UIViewController
-                self.present(nextViewController, animated:true, completion:nil)
-                print("should present new view controller")
-                print("signed in/n/n/n/n/n")
-            }
-
-            }
-        else{
+//        if(FBSDKAccessToken.current() != nil){
+//            let credential = FacebookAuthProvider.credential(withAccessToken: FBSDKAccessToken.current().tokenString)
+//
+//            Auth.auth().signIn(with: credential) { (user, error) in
+//                if let error = error {
+//                    // ...
+//
+//                    print("my error/n/n/n/n/")
+//                    return
+//                }
+//
+//                let storyBoard : UIStoryboard = UIStoryboard(name: "Main", bundle:nil)
+//                let nextViewController = storyBoard.instantiateViewController(withIdentifier: "PartyViewController") as UIViewController
+//                self.present(nextViewController, animated:true, completion:nil)
+//                print("should present new view controller")
+//                print("signed in/n/n/n/n/n")
+//            }
+//
+//            }
+//        else{
         let loginButton = FBSDKLoginButton()
         loginButton.readPermissions = ["public_profile", "email", "user_friends"]
         loginButton.center = view.center
         loginButton.delegate = self
         view.addSubview(loginButton)
-       }
+        
+//       }
         
     }
 

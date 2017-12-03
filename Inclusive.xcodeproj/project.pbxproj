@@ -16,6 +16,7 @@
 		BC32D7891FCBB00A0092FD9F /* SelectFriendsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC32D7881FCBB00A0092FD9F /* SelectFriendsViewController.swift */; };
 		BC32D78B1FCD03E10092FD9F /* FriendNotInvitedCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC32D78A1FCD03E10092FD9F /* FriendNotInvitedCell.swift */; };
 		BC32D78D1FCD13070092FD9F /* FriendInvitedCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC32D78C1FCD13070092FD9F /* FriendInvitedCell.swift */; };
+		BC32D78F1FD0B1820092FD9F /* PartyInputViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC32D78E1FD0B1820092FD9F /* PartyInputViewController.swift */; };
 		BC40A97A1FCA02820040877C /* PartyCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC40A9791FCA02820040877C /* PartyCell.swift */; };
 		BC40A97C1FCA058F0040877C /* PartyViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC40A97B1FCA058F0040877C /* PartyViewController.swift */; };
 		BC43D9BB1FC91BFB007BE1FC /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = BC43D9BA1FC91BFB007BE1FC /* GoogleService-Info.plist */; };
@@ -66,6 +67,7 @@
 		BC32D7881FCBB00A0092FD9F /* SelectFriendsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectFriendsViewController.swift; sourceTree = "<group>"; };
 		BC32D78A1FCD03E10092FD9F /* FriendNotInvitedCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FriendNotInvitedCell.swift; sourceTree = "<group>"; };
 		BC32D78C1FCD13070092FD9F /* FriendInvitedCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FriendInvitedCell.swift; sourceTree = "<group>"; };
+		BC32D78E1FD0B1820092FD9F /* PartyInputViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PartyInputViewController.swift; sourceTree = "<group>"; };
 		BC40A9791FCA02820040877C /* PartyCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PartyCell.swift; sourceTree = "<group>"; };
 		BC40A97B1FCA058F0040877C /* PartyViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PartyViewController.swift; sourceTree = "<group>"; };
 		BC43D9BA1FC91BFB007BE1FC /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "GoogleService-Info.plist"; path = "../../GoogleService-Info.plist"; sourceTree = "<group>"; };
@@ -211,6 +213,7 @@
 				BC32D78A1FCD03E10092FD9F /* FriendNotInvitedCell.swift */,
 				BC32D78C1FCD13070092FD9F /* FriendInvitedCell.swift */,
 				BCA7707C1FC22AD900085726 /* Assets.xcassets */,
+				BC32D78E1FD0B1820092FD9F /* PartyInputViewController.swift */,
 			);
 			name = Inclusive;
 			sourceTree = "<group>";
@@ -556,6 +559,7 @@
 				BC32D7851FCBA7080092FD9F /* AppDelegate.swift in Sources */,
 				BC32D7831FCBA4AA0092FD9F /* ViewController.swift in Sources */,
 				BC40A97A1FCA02820040877C /* PartyCell.swift in Sources */,
+				BC32D78F1FD0B1820092FD9F /* PartyInputViewController.swift in Sources */,
 				BC32D7871FCBAA8B0092FD9F /* VerifyViewController.swift in Sources */,
 				BC32D78D1FCD13070092FD9F /* FriendInvitedCell.swift in Sources */,
 				BC32D7891FCBB00A0092FD9F /* SelectFriendsViewController.swift in Sources */,

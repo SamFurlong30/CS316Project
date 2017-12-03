@@ -19,21 +19,51 @@ struct friend{
     var fbID: String
     var name: String
 }
-
 class SelectFriendsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UISearchResultsUpdating {
     let searchController = UISearchController(searchResultsController: nil)
 
-    @IBAction func DoneAction(_ sender: Any) {
+   
+    @objc func DoneAction() {
+        print("done action")
         let storyBoard : UIStoryboard = UIStoryboard(name: "Main", bundle:nil)
         let nextViewController = storyBoard.instantiateViewController(withIdentifier: "PartyViewController") as UIViewController
+        self.dismiss(animated: true, completion: nil)
         self.present(nextViewController, animated:true, completion:nil)
-        //make backend call to add friends
+        var col:String
+        if(isInviteMode){
+            col = "invitedTo"
+        }
+        else{
+            col = "Bouncers"
+            
+        }
+                //add all of the new selected friends to the database
+            for s in selectedItems {
+                print(s)
+                db.collection(col).document(currentDocument).collection("Invitees").document(s.fbID).setData(["InvitedBy": FBSDKAccessToken.current().userID]){ err in
+                    if let err = err {
+                        print("Error writing document: \(err)")
+                    } else {
+                        print("Document successfully written!")
+                    }
+                }
+                
+        }
         
+    
+       
         
     }
     
-    @IBAction func ClearAction(_ sender: Any) {
+ func ClearAction() {
+        //clear all added friends
+        for i in selectedItems {
+            items.append(i)
+        }
+        selectedItems.removeAll()
+        self.FriendsTable.reloadData()
     }
+   
     func updateSearchResults(for searchController: UISearchController) {
         print("filter check")
 
@@ -70,24 +100,53 @@ class SelectFriendsViewController: UIViewController, UITableViewDelegate, UITabl
         return 2
     }
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        if(indexPath.section == 0 && self.filteredItems.count>1){
+        if(indexPath.section == 0 && self.filteredItems.count>=1){
         tableView.cellForRow(at: indexPath)?.isUserInteractionEnabled = false
         self.selectedItems.append(self.filteredItems[indexPath.row])
-        self.filteredItems.remove(at: indexPath.row)
         self.items.remove(at: indexPath.row)
         self.FriendsTable.reloadData()
         }
     }
-   
+    @objc func addAction(sender: UIButton!) {
+        let f:friend = self.filteredItems[sender.tag]
+        self.selectedItems.append(f)
+        
+        if (items.contains(where: {$0.fbID == f.fbID}) ){
+            let i: Int = self.items.index(where: {$0.fbID == f.fbID})!
+        items.remove(at: i)
+        }
+        self.filteredItems.remove(at: sender.tag)
+        self.FriendsTable.reloadData()
+        
+        
+    }
+    @objc func deleteAction(sender: UIButton!) {
+        let f:friend = self.selectedItems[sender.tag]
+        self.items.append(f)
+        selectedItems.remove(at: sender.tag)
+        self.FriendsTable.reloadData()
+        
+    }
+    @IBAction func DoneButton(_ sender: Any) {
+        DoneAction()
+    }
+    
+    @IBAction func ClearButton(_ sender: Any) {
+        ClearAction()
+    }
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         print("added row")
         switch (indexPath.section) {
         case 0:
             if(indexPath.row < filteredItems.count){
             let cell:FriendNotInvitedCell = tableView.dequeueReusableCell(withIdentifier: "FriendNotInvitedCell", for: indexPath) as! FriendNotInvitedCell
+               
             let currentFriend = filteredItems[indexPath.row]
-            cell.textLabel!.text = currentFriend.name
-            cell.tag = indexPath.row
+                
+                cell.tag = indexPath.row
+                cell.AddToListAction.tag = indexPath.row
+                cell.NameLabel?.text = currentFriend.name
+                cell.AddToListAction.addTarget(self, action: #selector(addAction), for: .touchUpInside)
             return cell
             }
             else{
@@ -97,10 +156,16 @@ class SelectFriendsViewController: UIViewController, UITableViewDelegate, UITabl
             if(indexPath.row < selectedItems.count){
 
             let cell: FriendInvitedCell = tableView.dequeueReusableCell(withIdentifier: "FriendInvitedCell", for: indexPath) as!FriendInvitedCell
+                print(indexPath.row)
+                print(selectedItems.count)
             let currentFriend = selectedItems[indexPath.row]
-            cell.textLabel!.text = currentFriend.name + "is invited"
+            cell.NameLabel!.text = currentFriend.name
+                cell.DeleteInviteAction.tag = indexPath.row
+              cell.DeleteInviteAction.addTarget(self, action: #selector(deleteAction), for: .touchUpInside)
             cell.tag = indexPath.row
+                
                 return cell
+                
 
             }
             else{
@@ -128,6 +193,7 @@ class SelectFriendsViewController: UIViewController, UITableViewDelegate, UITabl
             return nil
         }
     }
+   
     var items = [friend]()
     var selectedItems = [friend]()
     var filteredItems = [friend]()
@@ -136,6 +202,7 @@ class SelectFriendsViewController: UIViewController, UITableViewDelegate, UITabl
     override func viewDidLoad() {
         super.viewDidLoad()
        
+
         
         
         
@@ -151,24 +218,54 @@ class SelectFriendsViewController: UIViewController, UITableViewDelegate, UITabl
             case .success(let graphResponse):
                 if let responseDictionary = graphResponse.dictionaryValue {
                     let friends = responseDictionary["data"] as! NSArray
+                    //query to see invited friends
+                    
                     for myFriend in friends{
                        let friendInfo = myFriend as! NSDictionary
                         let name = friendInfo["name"]
                         let id = friendInfo["id"]
-                        let newFriend:friend = friend(name: name! as! String, id: id! as! String )
-                        self.items.append(newFriend)
+                        var col:String
+                        if(isInviteMode){
+                            col = "invitedTo"
+                        }
+                        else{
+                            col = "Bouncers"
+
+                        }
+                        db.collection(col).document(currentDocument).collection("Invitees").getDocuments(){ (querySnapshot, error) in
+                         
+                                print("this be documents")
+                            
+                            var flag: Bool = true
+                                for i in querySnapshot!.documents {
+                                    //check to see if friend is already invitied
+                                    if(i.documentID as String == id as! String ){
+                                        self.selectedItems.append(friend(name: name as! String, id: id as! String))
+                                        print("shit")
+                                        flag = false
+                                    }
+                                    //add friend to selected
+                                }
+                            if(flag){
+                                self.items.append(friend(name: name as! String, id: id as! String))
+
+                            }
+                        
+                                self.FriendsTable.reloadData()
+                            
+                            }
                         self.filteredItems = self.items
                         self.FriendsTable.dataSource = self
                         self.FriendsTable.delegate = self
                         self.searchController.searchResultsUpdater = self
                         self.searchController.dimsBackgroundDuringPresentation = false
                         self.definesPresentationContext = true
+                        self.view.addSubview(self.searchController.searchBar)
+                            
                         
-                        self.FriendsTable.tableHeaderView = self.searchController.searchBar
-                        
-                        self.FriendsTable.reloadData()
-
+                       
                      }
+
                     
                     
                 }
@@ -178,24 +275,11 @@ class SelectFriendsViewController: UIViewController, UITableViewDelegate, UITabl
         }
         //do a firebase query for all of the added friends
         //append all of the added friends to addedItems
-        //remove all of the added friends from filtered items 
+        //remove all of the added friends from filtered items
       
     }
-    @IBOutlet weak var InviteBar: UIToolbar!
-    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-    switch(section){
-        
-    case 0:
-        return InviteBar.vie
-        
-    default:
-        return nil
-    }
-    }
-    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        return 75
-    }
 
+  
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         
