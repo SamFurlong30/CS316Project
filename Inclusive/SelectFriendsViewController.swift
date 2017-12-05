@@ -38,16 +38,16 @@ class SelectFriendsViewController: UIViewController, UITableViewDelegate, UITabl
             
         }
                 //add all of the new selected friends to the database
-            for s in selectedItems {
-                print(s)
-                db.collection(col).document(currentDocument).collection("Invitees").document(s.fbID).setData(["InvitedBy": FBSDKAccessToken.current().userID]){ err in
-                    if let err = err {
-                        print("Error writing document: \(err)")
-                    } else {
-                        print("Document successfully written!")
-                    }
+        for s in selectedItems {
+            print(s)
+            db.collection(col).document(currentDocument).collection("Invitees").document(s.fbID).setData(["InvitedBy": FBSDKAccessToken.current().userID]){ err in
+                if let err = err {
+                    print("Error writing document: \(err)")
+                } else {
+                    print("Document successfully written!")
                 }
-                
+            }
+            
         }
         
     
@@ -78,19 +78,11 @@ class SelectFriendsViewController: UIViewController, UITableViewDelegate, UITabl
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         switch (section) {
         case 0:
-            if(filteredItems.count == 0){
-                return 1
-            }
-            else{
             return filteredItems.count
-            }
+            
         case 1:
-            if(filteredItems.count == 0){
-                return 1
-            }
-            else{
             return selectedItems.count
-            }
+            
         default:
             return 0
         }
@@ -202,11 +194,8 @@ class SelectFriendsViewController: UIViewController, UITableViewDelegate, UITabl
     override func viewDidLoad() {
         super.viewDidLoad()
        
-
         
-        
-        
-        let params = ["fields" : "email, name"]
+        let params = ["fields" : "email, name, picture.type(large)"]
         let graphRequest = GraphRequest(graphPath: "me/friends", parameters: params)
         graphRequest.start {
             (urlResponse, requestResult) in
@@ -232,8 +221,9 @@ class SelectFriendsViewController: UIViewController, UITableViewDelegate, UITabl
                             col = "Bouncers"
 
                         }
+                        
+                    
                         db.collection(col).document(currentDocument).collection("Invitees").getDocuments(){ (querySnapshot, error) in
-                         
                                 print("this be documents")
                             
                             var flag: Bool = true
@@ -254,6 +244,7 @@ class SelectFriendsViewController: UIViewController, UITableViewDelegate, UITabl
                                 self.FriendsTable.reloadData()
                             
                             }
+                        
                         self.filteredItems = self.items
                         self.FriendsTable.dataSource = self
                         self.FriendsTable.delegate = self
@@ -261,6 +252,39 @@ class SelectFriendsViewController: UIViewController, UITableViewDelegate, UITabl
                         self.searchController.dimsBackgroundDuringPresentation = false
                         self.definesPresentationContext = true
                         self.view.addSubview(self.searchController.searchBar)
+                        print("trying to grab picture")
+                        print(friendInfo)
+                        if let imageString = ((friendInfo["picture"] as? [String: Any])?["data"] as? [String: Any])?["url"] as? String {
+                            print(imageString)
+                            let imageURL = URL(string: imageString)
+                            print(imageURL)
+                            // Define a download task. The download task will download the contents of the URL as a Data object and then you can do what you wish with that data.
+                            let session = URLSession(configuration: .default)
+                            let downloadPicTask = session.dataTask(with: imageURL!) { (data, response, error) in
+                                // The download has finished.
+                                print("downloadfinished")
+                                if let e = error {
+                                    print("Error downloading image picture: \(e)")
+                                } else {
+                                    // No errors found.
+                                    // It would be weird if we didn't have a response, so check for that too.
+                                    if let res = response as? HTTPURLResponse {
+                                        print("Downloaded image picture with response code \(res.statusCode)")
+                                        if let imageData = data {
+                                            // Finally convert that Data into an image and do what you wish with it.
+                                            let image = UIImage(data: imageData)
+                                            // Do something with your image.
+                                            print(image)
+                                        } else {
+                                            print("Couldn't get image: Image is nil")
+                                        }
+                                    } else {
+                                        print("Couldn't get response code for some reason")
+                                    }
+                                }
+                            }
+                            //Download image from imageURL
+                        }
                             
                         
                        
@@ -269,7 +293,7 @@ class SelectFriendsViewController: UIViewController, UITableViewDelegate, UITabl
                     
                     
                 }
-
+            
                 
             }
         }

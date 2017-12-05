@@ -7,12 +7,85 @@
 //
 
 import UIKit
+import FirebaseStorage
+import FBSDKCoreKit
+
 class PartyInputViewController: UIViewController,  UIImagePickerControllerDelegate, UINavigationControllerDelegate{
     let imagePicker = UIImagePickerController()
     @IBOutlet weak var MessageInput: UITextView!
+    var isInitial: Bool = true
+    var currentRow: Int = 0
+
+    @IBAction func DoneAction(_ sender: UIButton) {
+        if(isInitial == true){
+        let name:String = self.NameInput.text!
+        let starDate = self.Date
+        let endTime = self.EndTime
+        let components = Calendar.current.dateComponents([.hour, .minute], from: endTime!)
+        let endhour = components.hour
+        let endminute =  components.minute
+        let startTime = self.StartTime
+        let component = Calendar.current.dateComponents([.hour, .minute], from: startTime!)
+        let starthour = component.hour
+        let startminute = component.minute
+        let partyImage:UIImage = self.PartyImageView.image!
+        let location:String = self.LocationInput.text!
+        let desc:String = self.InviteInput.text!
+            var nCell:pCell = pCell(partyName: name, partyAddress: location, partyDescription: desc, documentID: "", startHour: starthour!, startMinute: startminute!, endHour: endhour!, endMinute: endminute!,  date: starDate!, isBouncer: false, image: self.PartyImageView.image!)
+        let ref = db.collection("Hosts").document(FBSDKAccessToken.current().userID).collection("Party").addDocument(data: ["hostType":"Owner"])
+        let did = ref.documentID
+        db.collection("Parties").document(did).setData(["Name": nCell.partyName, "Location":nCell.partyAddress, "Description" : nCell.partyDescription, "startMinute": startminute, "startHour":starthour, "endMinute":endminute, "endHour": endhour, "date": starDate])
+        let storageRef = storage.reference().child("PartyImages").child(did + ".png")
+        
+        if let imageData = UIImagePNGRepresentation(partyImage) {
+            let metadata = StorageMetadata()
+            metadata.contentType = "image/PNG"
+            print("trying to upload")
+            let uploadTask = storageRef.putData(imageData, metadata: metadata, completion:{ (metadata, error) in
+                print("succeeded")
     
+            })
+            nCell.documentID = did
+            storeItems.append(nCell)
+        }
+        }
+        else{
+            let name:String = self.NameInput.text!
+            let starDate = self.Date
+            let endTime = self.EndTime
+            let components = Calendar.current.dateComponents([.hour, .minute], from: endTime!)
+            let endhour = components.hour
+            let endminute =  components.minute
+            let startTime = self.StartTime
+            let component = Calendar.current.dateComponents([.hour, .minute], from: startTime!)
+            let starthour = component.hour
+            let startminute = component.minute
+            let partyImage:UIImage = self.PartyImageView.image!
+            let location:String = self.LocationInput.text!
+            let desc:String = self.InviteInput.text!
+            var nCell:pCell = pCell(partyName: name, partyAddress: location, partyDescription: desc, documentID: "", startHour: starthour!, startMinute: startminute!, endHour: endhour!, endMinute: endminute!,  date: starDate!, isBouncer: false, image:self.PartyImageView.image!)
+            let did = storeItems[currentRow].documentID
+            db.collection("Parties").document(did).setData(["Name": nCell.partyName, "Location":nCell.partyAddress, "Description" : nCell.partyDescription, "startMinute": startminute, "startHour":starthour, "endMinute":endminute, "endHour": endhour, "date": starDate])
+            let storageRef = storage.reference().child("PartyImages").child(did + ".png")
+            
+            if let imageData = UIImagePNGRepresentation(partyImage) {
+                let metadata = StorageMetadata()
+                metadata.contentType = "image/PNG"
+                print("trying to upload")
+                let uploadTask = storageRef.putData(imageData, metadata: metadata, completion:{ (metadata, error) in
+                    print("succeeded")
+                    
+                    
+                })
+        storeItems.remove(at: currentRow)
+            storeItems.append(nCell)
+        
+
+        }
+    }
+}
     @IBOutlet weak var LocationInput: UITextField!
-    
+  
    
     @IBAction func PartyImageAction(_ sender: Any) {
         imagePicker.sourceType = .photoLibrary
@@ -35,7 +108,7 @@ class PartyInputViewController: UIViewController,  UIImagePickerControllerDelega
         Date = dateFormatter.string(from: StartDatePicker.date)
         EndTime = EndTimePicker.date
         StartTime = StartTimePicker.date
-     
+        
         
 
         // Do any additional setup after loading the view.

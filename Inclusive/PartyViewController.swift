@@ -30,6 +30,7 @@ struct pCell{
 
     
 }
+var storeItems:[pCell] = []
 class PartyViewController: UIViewController,UITableViewDelegate, UITableViewDataSource,UIPopoverPresentationControllerDelegate {
     var InputPopover: PartyInputViewController!
     var datepicker: UIDatePicker = UIDatePicker()
@@ -48,93 +49,41 @@ class PartyViewController: UIViewController,UITableViewDelegate, UITableViewData
         let popover = InputPopover.popoverPresentationController!
         popover.delegate = self
         popover.permittedArrowDirections = .up
-        
+        if(act == 1){
+            present(InputPopover, animated: true, completion: nil)
+
+        var cell = items[send]
+        InputPopover.NameInput.text = cell.partyName
+        InputPopover.InviteInput.text = cell.partyDescription
+        InputPopover.LocationInput.text = cell.partyAddress
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat =  "mm dd yyyy"
+            let date = dateFormatter.date(from: cell.date)
+            var calendar = Calendar(identifier: .gregorian)
+            var components = DateComponents(year: 2017, month:1, day: 1, hour: cell.startHour, minute: cell.startMinute, second: 00)
+            let startTime = calendar.date(from: components)!
+            components = DateComponents(year: 2017, month:1, day: 1, hour: cell.endHour, minute: cell.endMinute, second: 00)
+            let endTime = calendar.date(from: components)!
+            
+
+            InputPopover.StartDatePicker.date = startTime
+            InputPopover.EndTimePicker.date = endTime
+            InputPopover.PartyImageView.image = cell.image
+        InputPopover.isInitial = false
+        InputPopover.currentRow = send
+        return
+        }
         present(InputPopover, animated: true, completion: nil)
-        if(act == 0){
-            //initial
-            InputPopover.DoneButton.addTarget(self, action: #selector(doneActionForInitial), for: .touchUpInside)
-        }
-        else{
-            InputPopover.InviteInput.text = items[send].partyDescription
-            InputPopover.NameInput.text = items[send].partyName
-            InputPopover.LocationInput.text =  items[send].partyAddress
-            InputPopover.DoneButton.tag = send
-        
-            InputPopover.DoneButton.addTarget(self, action: #selector(doneActionForEdit), for: .touchUpInside)
-            //non initial
-        }
 
-    }
-    @objc func doneActionForInitial(sender: UIButton){
-      
        
-        let name:String = InputPopover.NameInput.text!
-        let starDate = InputPopover.Date
-        
-        let endTime = InputPopover.EndTime
-        let components = Calendar.current.dateComponents([.hour, .minute], from: endTime!)
-        let endhour = components.hour
-        let endminute =  components.minute
-        let startTime = InputPopover.StartTime
-        let component = Calendar.current.dateComponents([.hour, .minute], from: startTime!)
-        let starthour = component.hour
-        let startminute = component.minute
-        let partyImage:UIImage = InputPopover.PartyImageView.image!
-        let location:String = InputPopover.LocationInput.text!
-        let desc:String = InputPopover.InviteInput.text!
-        var nCell:pCell = pCell(partyName: name, partyAddress: location, partyDescription: desc, documentID: "", startHour: starthour!, startMinute: startminute!, endHour: endhour!, endMinute: endminute!,  date: starDate!, isBouncer: false, image: UIImage())
-        let ref = db.collection("Hosts").document(FBSDKAccessToken.current().userID).collection("Party").addDocument(data: ["hostType":"Owner"])
-        let did = ref.documentID
-        db.collection("Parties").document(did).setData(["Name": nCell.partyName, "Location":nCell.partyAddress, "Description" : nCell.partyDescription, "startMinute": startminute, "startHour":starthour, "endMinute":endminute, "endHour": endhour, "date": starDate])
-        let storageRef = storage.reference().child("PartyImages").child(did + ".png")
-        
-        if let imageData = UIImagePNGRepresentation(partyImage) {
-            let metadata = StorageMetadata()
-            metadata.contentType = "image/PNG"
-            print("trying to upload")
-            let uploadTask = storageRef.putData(imageData, metadata: metadata, completion:{ (metadata, error) in
-            print("succeeded")
-    
-        
-    })
-}
-        nCell.documentID = did
-        items.append(nCell)
-        self.TableView.reloadData()
-        
+
     }
+
     @objc func doneActionForEdit(sender: UIButton){
-        let name:String = InputPopover.NameInput.text!
-        let starDate = InputPopover.Date
-        
-        let endTime = InputPopover.EndTime
-        let components = Calendar.current.dateComponents([.hour, .minute], from: endTime!)
-        let endhour = components.hour
-        let endminute =  components.minute
-        
-        let startTime = InputPopover.StartTime
-        let component = Calendar.current.dateComponents([.hour, .minute], from: startTime!)
-        let starthour = component.hour
-        let startminute = component.minute
-        print(starthour)
-        print(startminute)
-        let location:String = InputPopover.LocationInput.text!
-        let desc:String = InputPopover.InviteInput.text!
-        var nCell:pCell = pCell(partyName: name, partyAddress: location, partyDescription: desc, documentID: "", startHour: starthour!, startMinute: startminute!, endHour: endhour!, endMinute: endminute!,  date: starDate!, isBouncer: false, image: UIImage())
-        print(nCell.startMinute)
-        db.collection("Parties").document(items[sender.tag].documentID).setData(["Name": nCell.partyName, "Location":nCell.partyAddress, "Description" : nCell.partyDescription, "startMinute": startminute, "startHour": starthour, "endMinute": endminute, "endHour":  endhour, "date": starDate])
-        nCell.documentID = items[sender.tag].documentID
-        
-        items[sender.tag] = nCell
-        print(nCell)
-        print(items)
+       
         self.TableView.reloadData()
     
 
-    }
-    func addPartyToDataBase(cell:pCell){
-        
-        
     }
   
     @objc
@@ -143,9 +92,10 @@ class PartyViewController: UIViewController,UITableViewDelegate, UITableViewData
     }
     @objc
     func verifyTapped(sender: UIButton){
+      
         
-        let storyBoard : UIStoryboard = UIStoryboard(name: "Main", bundle:nil)
-        let nextViewController = storyBoard.instantiateViewController(withIdentifier: "VerifyViewController") as UIViewController
+        let nextViewController = VerifyViewController()
+        nextViewController.currentParty = items[sender.tag].documentID
         self.present(nextViewController, animated:true, completion:nil)
     }
     @objc
@@ -175,23 +125,22 @@ class PartyViewController: UIViewController,UITableViewDelegate, UITableViewData
 
         let currentCell = items[indexPath.row]
         if(currentCell.isBouncer){
-            
+           //different cell
         }
         else{
         print(currentCell)
         cell.PartyName.text = currentCell.partyName
         cell.Location.text = currentCell.partyAddress
         cell.Location.allowsEditingTextAttributes = false
-        cell.EditParty.addTarget(self, action:#selector(editTapped(sender:)), for: UIControlEvents.touchUpInside)
-        cell.VerifyParty.addTarget(self, action:#selector(verifyTapped(sender:)), for: UIControlEvents.touchUpInside)
-         cell.Invite.addTarget(self, action:#selector(inviteTapped(sender:)), for: UIControlEvents.touchUpInside)
+        cell.EditParty.addTarget(self, action:#selector(editTapped), for: UIControlEvents.touchUpInside)
+            cell.VerifyParty.tag = indexPath.row
+            cell.VerifyParty.addTarget(self, action:#selector(verifyTapped), for: UIControlEvents.touchUpInside)
+         cell.Invite.addTarget(self, action:#selector(inviteTapped), for: UIControlEvents.touchUpInside)
         cell.EditParty.tag = indexPath.row
         cell.VerifyParty.tag = indexPath.row
         cell.Invite.tag = indexPath.row
-            cell.imageView?.contentMode = .center
-            cell.imageView?.clipsToBounds = true
-        cell.imageView?.image = currentCell.image
-       
+
+        cell.PartyImage.image = currentCell.image
 
         cell.StartDate.text = currentCell.date
         //if is not active
@@ -228,7 +177,15 @@ class PartyViewController: UIViewController,UITableViewDelegate, UITableViewData
     }
     override func viewDidLoad() {
         super.viewDidLoad()
+        items = storeItems
+        if(items.count != 0){
+            TableView.dataSource = self
+            TableView.reloadData()
+            print("storeItems used")
+        }
+        else{
     TableView.dataSource = self
+        TableView.reloadData()
    // db.collection("Host/"+Auth.auth().currentUser!.uid).getDocuments(completion: )
     db.collection("Hosts").document(FBSDKAccessToken.current().userID).collection("Party").getDocuments(){(querySnapshot, err) in
         print("quering hosts")
@@ -240,12 +197,11 @@ class PartyViewController: UIViewController,UITableViewDelegate, UITableViewData
     }else{
         for document in querySnapshot!.documents{
             print(document)
-
-            
               db.collection("Parties").document(document.documentID).getDocument{ (document,error) in
+                print(error)
                 let description = document?.data()["Description"] as! String
-                let name = document?.data()["Location"] as! String
-                let location = document?.data()["Name"] as! String
+                let name = document?.data()["Name"] as! String
+                let location = document?.data()["Location"] as! String
                 let date = document?.data()["date"] as! String
                 let startMinute = document?.data()["startMinute"] as! Int
                 let startHour = document?.data()["startHour"] as! Int
@@ -256,12 +212,15 @@ class PartyViewController: UIViewController,UITableViewDelegate, UITableViewData
                 pathReference.getData(maxSize: 1024 * 1024 * 1024) { data, error in
                     if let error = error {
                         // Uh-oh, an error occurred!
+                        print("broken")
+
                         print(error)
                     } else {
+                        
                         // Data for "images/island.jpg" is returned
                         let image = UIImage(data: data!)
                         self.items.append(pCell(partyName: name, partyAddress: location, partyDescription: description,documentID: document?.documentID as! String, startHour: startHour, startMinute: startMinute, endHour: endHour, endMinute: endMinute, date: date, isBouncer: false, image: image!))
-                        
+                        storeItems.append(pCell(partyName: name, partyAddress: location, partyDescription: description,documentID: document?.documentID as! String, startHour: startHour, startMinute: startMinute, endHour: endHour, endMinute: endMinute, date: date, isBouncer: false, image: image!))
                         self.TableView.reloadData()
                         
                     }
@@ -274,6 +233,7 @@ class PartyViewController: UIViewController,UITableViewDelegate, UITableViewData
         //write query to get parties for bouncers 
 
     
+        }
         }
         // Do any additional setup after loading the view.
     }
