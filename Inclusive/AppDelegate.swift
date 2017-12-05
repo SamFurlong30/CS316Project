@@ -1,9 +1,10 @@
 //import UIKit
 import Firebase
+import FirebaseStorage
 let db = Firestore.firestore()
+let storage = Storage.storage()
 
 import FacebookCore
-
 import FBSDKCoreKit
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {

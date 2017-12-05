@@ -7,18 +7,26 @@
 //
 
 import UIKit
-
-class PartyInputViewController: UIViewController {
- 
+class PartyInputViewController: UIViewController,  UIImagePickerControllerDelegate, UINavigationControllerDelegate{
+    let imagePicker = UIImagePickerController()
     @IBOutlet weak var MessageInput: UITextView!
     
     @IBOutlet weak var LocationInput: UITextField!
     
+   
+    @IBAction func PartyImageAction(_ sender: Any) {
+        imagePicker.sourceType = .photoLibrary
+        
+        present(imagePicker, animated: true, completion: nil)
+    }
+    @IBOutlet weak var PartyImageView: UIImageView!
     var StartTime:Date!
     var EndTime:Date!
     var Date:String!
     override func viewDidLoad() {
         super.viewDidLoad()
+        imagePicker.delegate = self
+        
         StartDatePicker.datePickerMode = .date
         StartTimePicker.datePickerMode = .time
         EndTimePicker.datePickerMode = .time
@@ -45,6 +53,12 @@ class PartyInputViewController: UIViewController {
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
+    }
+    func imagePickerController(_ picker: UIImagePickerController,
+                                        didFinishPickingMediaWithInfo info: [String : Any]){
+    PartyImageView.image = info[UIImagePickerControllerOriginalImage] as? UIImage
+    
+    dismiss(animated: true, completion: nil)
     }
     
 

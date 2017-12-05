@@ -15,12 +15,14 @@ class PartyCell: UITableViewCell {
     
     @IBOutlet weak var VerifyParty: UIButton!
     @IBOutlet weak var PartyName: UILabel!
+    @IBOutlet weak var DeletePartyButton: UIButton!
     
     @IBOutlet weak var StartTimeEndTime: UILabel!
     @IBOutlet weak var StartDate: UILabel!
     
     @IBOutlet weak var AddBouncers: UIButton!
     @IBOutlet weak var RSVP: UILabel!
+  
     @IBOutlet weak var PartyImage: UIImageView!
     
     @IBOutlet weak var Invite: UIButton!
