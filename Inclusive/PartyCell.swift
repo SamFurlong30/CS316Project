@@ -34,5 +34,6 @@ class PartyCell: UITableViewCell {
         // Drawing code
     }
     */
+  
 
 }

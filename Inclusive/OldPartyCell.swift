@@ -1,18 +1,15 @@
 //
-//  FriendCell.swift
+//  OldPartyCell.swift
 //  Inclusive
 //
-//  Created by Sam Furlong on 11/27/17.
+//  Created by Sam Furlong on 12/10/17.
 //  Copyright © 2017 Sam Furlong. All rights reserved.
 //
 
 import UIKit
 
-class FriendNotInvitedCell: UITableViewCell {
-    @IBOutlet weak var ProfilePic: UIImageView!
-    
-    @IBOutlet weak var NameLabel: UILabel!
-    @IBOutlet weak var AddToListAction: UIButton!
+class OldPartyCell: UITableViewCell {
+
     override func awakeFromNib() {
         super.awakeFromNib()
         // Initialization code

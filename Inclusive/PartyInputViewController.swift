@@ -17,8 +17,12 @@ class PartyInputViewController: UIViewController,  UIImagePickerControllerDelega
     var currentRow: Int = 0
 
     @IBAction func DoneAction(_ sender: UIButton) {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "dd MMM yyyy"
+        Date = dateFormatter.string(from: StartDatePicker.date)
         if(isInitial == true){
         let name:String = self.NameInput.text!
+           
         let starDate = self.Date
         let endTime = self.EndTime
         let components = Calendar.current.dateComponents([.hour, .minute], from: endTime!)
@@ -31,7 +35,7 @@ class PartyInputViewController: UIViewController,  UIImagePickerControllerDelega
         let partyImage:UIImage = self.PartyImageView.image!
         let location:String = self.LocationInput.text!
         let desc:String = self.InviteInput.text!
-            var nCell:pCell = pCell(partyName: name, partyAddress: location, partyDescription: desc, documentID: "", startHour: starthour!, startMinute: startminute!, endHour: endhour!, endMinute: endminute!,  date: starDate!, isBouncer: false, image: self.PartyImageView.image!)
+            var nCell:pCell = pCell(partyName: name, partyAddress: location, partyDescription: desc, documentID: "", startHour: starthour!, startMinute: startminute!, endHour: endhour!, endMinute: endminute!,  date: starDate!, isBouncer: false, image: self.PartyImageView.image!, isStale: false, isActive: false)
         let ref = db.collection("Hosts").document(FBSDKAccessToken.current().userID).collection("Party").addDocument(data: ["hostType":"Owner"])
         let did = ref.documentID
         db.collection("Parties").document(did).setData(["Name": nCell.partyName, "Location":nCell.partyAddress, "Description" : nCell.partyDescription, "startMinute": startminute, "startHour":starthour, "endMinute":endminute, "endHour": endhour, "date": starDate])
@@ -63,7 +67,7 @@ class PartyInputViewController: UIViewController,  UIImagePickerControllerDelega
             let partyImage:UIImage = self.PartyImageView.image!
             let location:String = self.LocationInput.text!
             let desc:String = self.InviteInput.text!
-            var nCell:pCell = pCell(partyName: name, partyAddress: location, partyDescription: desc, documentID: "", startHour: starthour!, startMinute: startminute!, endHour: endhour!, endMinute: endminute!,  date: starDate!, isBouncer: false, image:self.PartyImageView.image!)
+            var nCell:pCell = pCell(partyName: name, partyAddress: location, partyDescription: desc, documentID: "", startHour: starthour!, startMinute: startminute!, endHour: endhour!, endMinute: endminute!,  date: starDate!, isBouncer: false, image:self.PartyImageView.image!, isStale: false, isActive: false)
             let did = storeItems[currentRow].documentID
             db.collection("Parties").document(did).setData(["Name": nCell.partyName, "Location":nCell.partyAddress, "Description" : nCell.partyDescription, "startMinute": startminute, "startHour":starthour, "endMinute":endminute, "endHour": endhour, "date": starDate])
             let storageRef = storage.reference().child("PartyImages").child(did + ".png")
@@ -103,9 +107,7 @@ class PartyInputViewController: UIViewController,  UIImagePickerControllerDelega
         StartDatePicker.datePickerMode = .date
         StartTimePicker.datePickerMode = .time
         EndTimePicker.datePickerMode = .time
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "dd MMM yyyy"
-        Date = dateFormatter.string(from: StartDatePicker.date)
+        
         EndTime = EndTimePicker.date
         StartTime = StartTimePicker.date
         

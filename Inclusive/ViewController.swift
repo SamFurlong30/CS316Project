@@ -14,12 +14,7 @@ import FirebaseFirestore
 import FirebaseCore
 var logout:Bool = false
 
-
-
-
 class ViewController: UIViewController, FBSDKLoginButtonDelegate{
-
-    
 
     override func viewDidLoad() {
         super.viewDidLoad()

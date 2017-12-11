@@ -9,7 +9,8 @@
 import UIKit
 
 class FriendInvitedCell: UITableViewCell {
-
+    @IBOutlet weak var ProfilePic: UIImageView!
+    
     @IBOutlet weak var NameLabel: UILabel!
     @IBOutlet weak var DeleteInviteAction: UIButton!
     override func awakeFromNib() {

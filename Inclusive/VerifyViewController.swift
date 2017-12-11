@@ -83,7 +83,6 @@ class VerifyViewController: UIViewController,AVCaptureMetadataOutputObjectsDeleg
         done.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 0).isActive = true
         done.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: 0).isActive = true
         done.heightAnchor.constraint(equalToConstant: 100).isActive = true
-        
         scannedCode.translatesAutoresizingMaskIntoConstraints = false
         scannedCode.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -20.0).isActive = true
         scannedCode.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20.0).isActive = true
@@ -126,17 +125,24 @@ class VerifyViewController: UIViewController,AVCaptureMetadataOutputObjectsDeleg
             code = readableObject.stringValue!
         print(code)
         print("code")
-        db.collection("invitedTo").document(currentParty).collection("Invitees").getDocuments{ (querySnapshot,error) in
+        db.collection("RSVP").document(currentParty).collection("Invitees").getDocuments{ (querySnapshot,error) in
+            var flag = true
             for document in (querySnapshot?.documents)!{
                 print(document.documentID)
                 print(self.code)
                 print("QR Verified")
                 if(document.documentID == self.code ){
                     self.scannedCode.text = "Verified"
+                    flag = false
                     self.isVerified = true
+                    db.collection("checkedIn").document(self.currentParty).collection("Invitees").document(self.code).setData(["checkedInBy" : ""])
                 }
+                print(self.code)
+                print(document.documentID)
             }
+            if(flag){
             self.scannedCode.text = "Not Verified"
+            }
 
         }
         //insert some logic that checks from database and put a check mark for verify

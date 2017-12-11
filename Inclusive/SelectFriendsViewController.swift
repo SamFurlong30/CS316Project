@@ -12,17 +12,20 @@ import FacebookCore
 import FirebaseAuth
 
 struct friend{
-    init(name: String, id: String) {
+    init(name: String, id: String, pic: UIImageView) {
         self.name = name
         self.fbID = id
+        self.pic = pic
     }
     var fbID: String
     var name: String
+    var pic: UIImageView
+    
 }
 class SelectFriendsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UISearchResultsUpdating {
     let searchController = UISearchController(searchResultsController: nil)
-
-   
+    var currentDocument: String!
+    var isInviteMode: Bool!
     @objc func DoneAction() {
         print("done action")
         let storyBoard : UIStoryboard = UIStoryboard(name: "Main", bundle:nil)
@@ -40,15 +43,17 @@ class SelectFriendsViewController: UIViewController, UITableViewDelegate, UITabl
                 //add all of the new selected friends to the database
         for s in selectedItems {
             print(s)
-            db.collection(col).document(currentDocument).collection("Invitees").document(s.fbID).setData(["InvitedBy": FBSDKAccessToken.current().userID]){ err in
+            if(s.name != "nahfam"){
+            db.collection(col).document(self.currentDocument).collection("Invitees").document(s.fbID).setData(["InvitedBy": FBSDKAccessToken.current().userID]){ err in
                 if let err = err {
                     print("Error writing document: \(err)")
                 } else {
                     print("Document successfully written!")
                 }
             }
-            
+            }
         }
+            
         
     
        
@@ -136,6 +141,7 @@ class SelectFriendsViewController: UIViewController, UITableViewDelegate, UITabl
             let currentFriend = filteredItems[indexPath.row]
                 
                 cell.tag = indexPath.row
+                cell.ProfilePic.image = currentFriend.pic.image
                 cell.AddToListAction.tag = indexPath.row
                 cell.NameLabel?.text = currentFriend.name
                 cell.AddToListAction.addTarget(self, action: #selector(addAction), for: .touchUpInside)
@@ -152,6 +158,7 @@ class SelectFriendsViewController: UIViewController, UITableViewDelegate, UITabl
                 print(selectedItems.count)
             let currentFriend = selectedItems[indexPath.row]
             cell.NameLabel!.text = currentFriend.name
+                cell.ProfilePic.image = currentFriend.pic.image
                 cell.DeleteInviteAction.tag = indexPath.row
               cell.DeleteInviteAction.addTarget(self, action: #selector(deleteAction), for: .touchUpInside)
             cell.tag = indexPath.row
@@ -185,6 +192,9 @@ class SelectFriendsViewController: UIViewController, UITableViewDelegate, UITabl
             return nil
         }
     }
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        return 61.0
+    }
    
     var items = [friend]()
     var selectedItems = [friend]()
@@ -193,7 +203,11 @@ class SelectFriendsViewController: UIViewController, UITableViewDelegate, UITabl
     @IBOutlet weak var FriendsTable: UITableView!
     override func viewDidLoad() {
         super.viewDidLoad()
-       
+        self.FriendsTable?.delegate = self
+        self.searchController.searchResultsUpdater = self
+        self.searchController.dimsBackgroundDuringPresentation = false
+        self.definesPresentationContext = true
+        self.view.addSubview(self.searchController.searchBar)
         
         let params = ["fields" : "email, name, picture.type(large)"]
         let graphRequest = GraphRequest(graphPath: "me/friends", parameters: params)
@@ -214,7 +228,7 @@ class SelectFriendsViewController: UIViewController, UITableViewDelegate, UITabl
                         let name = friendInfo["name"]
                         let id = friendInfo["id"]
                         var col:String
-                        if(isInviteMode){
+                        if(self.isInviteMode){
                             col = "invitedTo"
                         }
                         else{
@@ -223,21 +237,71 @@ class SelectFriendsViewController: UIViewController, UITableViewDelegate, UITabl
                         }
                         
                     
-                        db.collection(col).document(currentDocument).collection("Invitees").getDocuments(){ (querySnapshot, error) in
+                        db.collection(col).document(self.currentDocument).collection("Invitees").getDocuments(){ (querySnapshot, error) in
                                 print("this be documents")
                             
                             var flag: Bool = true
                                 for i in querySnapshot!.documents {
                                     //check to see if friend is already invitied
                                     if(i.documentID as String == id as! String ){
-                                        self.selectedItems.append(friend(name: name as! String, id: id as! String))
+                                        if let imageString = ((friendInfo["picture"] as? [String: Any])?["data"] as? [String: Any])?["url"] as? String {
+                                            print(imageString)
+                                            let imageURL = URL(string: imageString)
+                                            print(imageURL)
+                                            // Define a download task. The download task will download the contents of the URL as a Data object and then you can do what you wish with that data.
+                                            let session = URLSession(configuration: .default)
+                                            print("download pic")
+                                            DispatchQueue.global(qos: .userInitiated).async {
+                                                
+                                                let imageData:NSData = NSData(contentsOf: imageURL!)!
+                                                let imageView = UIImageView(frame: CGRect(x:0, y:0, width:200, height:200))
+                                                imageView.center = self.view.center
+                                                print("task queued")
+                                                // When from background thread, UI needs to be updated on main_queue
+                                                DispatchQueue.main.async {
+                                                    let image = UIImage(data: imageData as Data)
+                                                    imageView.image = image
+                                                    imageView.contentMode = UIViewContentMode.scaleAspectFit
+                                                    print("done")
+                                                    self.selectedItems.append(friend(name: name as! String, id: id as! String, pic: imageView))
+                                                    
+                                                }
+                                            }
+                                            //Download image from imageURL
+                                        }
+                                       
                                         print("shit")
                                         flag = false
                                     }
                                     //add friend to selected
                                 }
                             if(flag){
-                                self.items.append(friend(name: name as! String, id: id as! String))
+                                if let imageString = ((friendInfo["picture"] as? [String: Any])?["data"] as? [String: Any])?["url"] as? String {
+                                    print(imageString)
+                                    let imageURL = URL(string: imageString)
+                                    print(imageURL)
+                                    // Define a download task. The download task will download the contents of the URL as a Data object and then you can do what you wish with that data.
+                                    let session = URLSession(configuration: .default)
+                                    print("download pic")
+                                    DispatchQueue.global(qos: .userInitiated).async {
+                                        
+                                        let imageData:NSData = NSData(contentsOf: imageURL!)!
+                                        let imageView = UIImageView(frame: CGRect(x:0, y:0, width:200, height:200))
+                                        imageView.center = self.view.center
+                                        print("task queued")
+                                        // When from background thread, UI needs to be updated on main_queue
+                                        DispatchQueue.main.async {
+                                            let image = UIImage(data: imageData as Data)
+                                            imageView.image = image
+                                            imageView.contentMode = UIViewContentMode.scaleAspectFit
+                                            print("done")
+                                            self.items.append(friend(name: name as! String, id: id as! String, pic: imageView))
+
+                                        }
+                                    }
+                                    //Download image from imageURL
+                                }
+                                
 
                             }
                         
@@ -246,46 +310,10 @@ class SelectFriendsViewController: UIViewController, UITableViewDelegate, UITabl
                             }
                         
                         self.filteredItems = self.items
-                        self.FriendsTable.dataSource = self
-                        self.FriendsTable.delegate = self
-                        self.searchController.searchResultsUpdater = self
-                        self.searchController.dimsBackgroundDuringPresentation = false
-                        self.definesPresentationContext = true
-                        self.view.addSubview(self.searchController.searchBar)
+                      
                         print("trying to grab picture")
                         print(friendInfo)
-                        if let imageString = ((friendInfo["picture"] as? [String: Any])?["data"] as? [String: Any])?["url"] as? String {
-                            print(imageString)
-                            let imageURL = URL(string: imageString)
-                            print(imageURL)
-                            // Define a download task. The download task will download the contents of the URL as a Data object and then you can do what you wish with that data.
-                            let session = URLSession(configuration: .default)
-                            let downloadPicTask = session.dataTask(with: imageURL!) { (data, response, error) in
-                                // The download has finished.
-                                print("downloadfinished")
-                                if let e = error {
-                                    print("Error downloading image picture: \(e)")
-                                } else {
-                                    // No errors found.
-                                    // It would be weird if we didn't have a response, so check for that too.
-                                    if let res = response as? HTTPURLResponse {
-                                        print("Downloaded image picture with response code \(res.statusCode)")
-                                        if let imageData = data {
-                                            // Finally convert that Data into an image and do what you wish with it.
-                                            let image = UIImage(data: imageData)
-                                            // Do something with your image.
-                                            print(image)
-                                        } else {
-                                            print("Couldn't get image: Image is nil")
-                                        }
-                                    } else {
-                                        print("Couldn't get response code for some reason")
-                                    }
-                                }
-                            }
-                            //Download image from imageURL
-                        }
-                            
+                    
                         
                        
                      }
@@ -304,6 +332,13 @@ class SelectFriendsViewController: UIViewController, UITableViewDelegate, UITabl
     }
 
   
+    @IBOutlet weak var EmailField: UITextField!
+    
+    @IBAction func EmailButton(_ sender: Any) {
+        selectedItems.append(friend(name: EmailField.text!, id: "nahfam", pic: UIImageView()))
+        FriendsTable.reloadData()
+        
+    }
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         
