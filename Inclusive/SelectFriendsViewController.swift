@@ -25,13 +25,13 @@ struct friend{
 class SelectFriendsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UISearchResultsUpdating {
     let searchController = UISearchController(searchResultsController: nil)
     var currentDocument: String!
+    
     var isInviteMode: Bool!
-    @objc func DoneAction() {
+    
+    @IBAction func DoneAction(_ sender: Any) {
+    
         print("done action")
-        let storyBoard : UIStoryboard = UIStoryboard(name: "Main", bundle:nil)
-        let nextViewController = storyBoard.instantiateViewController(withIdentifier: "PartyViewController") as UIViewController
-        self.dismiss(animated: true, completion: nil)
-        self.present(nextViewController, animated:true, completion:nil)
+      
         var col:String
         if(isInviteMode){
             col = "invitedTo"
@@ -40,23 +40,60 @@ class SelectFriendsViewController: UIViewController, UITableViewDelegate, UITabl
             col = "Bouncers"
             
         }
-                //add all of the new selected friends to the database
-        for s in selectedItems {
-            print(s)
-            if(s.name != "nahfam"){
-            db.collection(col).document(self.currentDocument).collection("Invitees").document(s.fbID).setData(["InvitedBy": FBSDKAccessToken.current().userID]){ err in
-                if let err = err {
-                    print("Error writing document: \(err)")
+        let collection = db.collection(col).document(self.currentDocument).collection("Invitees")
+        collection.getDocuments { (docset, error) in
+            // An error occurred.
+            guard let docset = docset else {
+                return
+            }
+            // There's nothing to delete.
+            guard docset.count > 0 else {
+                for s in self.selectedItems {
+                    print(s)
+                    if(s.name != "nahfam"){
+                        
+                        collection.document(s.fbID).setData(["InvitedBy": FBSDKAccessToken.current().userID]){ err in
+                            if let err = err {
+                                print("Error writing document: \(err)")
+                            } else {
+                                print("Document successfully written!")
+                            }
+                        }
+                    }
+                }
+                return
+            }
+            
+            let batch = collection.firestore.batch()
+            docset.documents.forEach { batch.deleteDocument($0.reference) }
+            
+            batch.commit { (batchError) in
+                if let batchError = batchError {
+                    // Stop the deletion process and handle the error. Some elements
+                    // may have been deleted.
                 } else {
-                    print("Document successfully written!")
+                    //this assumes less than 1000 people parties
+                    // ohhh fucking well
+                    for s in self.selectedItems {
+                        print(s)
+                        if(s.name != "nahfam"){
+                            
+                            collection.document(s.fbID).setData(["InvitedBy": FBSDKAccessToken.current().userID]){ err in
+                                if let err = err {
+                                    print("Error writing document: \(err)")
+                                } else {
+                                    print("Document successfully written!")
+                                }
+                            }
+                        }
+                    }
+
                 }
             }
-            }
         }
-            
-        
-    
-       
+                //add all of the new selected friends to the database
+        self.dismiss(animated: true, completion: nil)
+
         
     }
     
@@ -124,9 +161,7 @@ class SelectFriendsViewController: UIViewController, UITableViewDelegate, UITabl
         self.FriendsTable.reloadData()
         
     }
-    @IBAction func DoneButton(_ sender: Any) {
-        DoneAction()
-    }
+  
     
     @IBAction func ClearButton(_ sender: Any) {
         ClearAction()
@@ -135,23 +170,18 @@ class SelectFriendsViewController: UIViewController, UITableViewDelegate, UITabl
         print("added row")
         switch (indexPath.section) {
         case 0:
-            if(indexPath.row < filteredItems.count){
             let cell:FriendNotInvitedCell = tableView.dequeueReusableCell(withIdentifier: "FriendNotInvitedCell", for: indexPath) as! FriendNotInvitedCell
                
             let currentFriend = filteredItems[indexPath.row]
-                
+                print("tableview invited")
                 cell.tag = indexPath.row
                 cell.ProfilePic.image = currentFriend.pic.image
                 cell.AddToListAction.tag = indexPath.row
                 cell.NameLabel?.text = currentFriend.name
                 cell.AddToListAction.addTarget(self, action: #selector(addAction), for: .touchUpInside)
             return cell
-            }
-            else{
-                return UITableViewCell()
-            }
+        
         case 1:
-            if(indexPath.row < selectedItems.count){
 
             let cell: FriendInvitedCell = tableView.dequeueReusableCell(withIdentifier: "FriendInvitedCell", for: indexPath) as!FriendInvitedCell
                 print(indexPath.row)
@@ -166,10 +196,8 @@ class SelectFriendsViewController: UIViewController, UITableViewDelegate, UITabl
                 return cell
                 
 
-            }
-            else{
-                return UITableViewCell()
-            }
+            
+        
         default:
             let cell: FriendInvitedCell = tableView.dequeueReusableCell(withIdentifier: "FriendInvitedCell", for: indexPath) as! FriendInvitedCell
             let currentFriend = selectedItems[indexPath.row]
@@ -203,7 +231,8 @@ class SelectFriendsViewController: UIViewController, UITableViewDelegate, UITabl
     @IBOutlet weak var FriendsTable: UITableView!
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.FriendsTable?.delegate = self
+        self.FriendsTable.delegate = self
+        self.FriendsTable.dataSource = self
         self.searchController.searchResultsUpdater = self
         self.searchController.dimsBackgroundDuringPresentation = false
         self.definesPresentationContext = true
@@ -213,7 +242,7 @@ class SelectFriendsViewController: UIViewController, UITableViewDelegate, UITabl
         let graphRequest = GraphRequest(graphPath: "me/friends", parameters: params)
         graphRequest.start {
             (urlResponse, requestResult) in
-            
+            print("trying request")
             switch requestResult {
             case .failed(let error):
                 print("error in graph request:", error)
@@ -244,6 +273,7 @@ class SelectFriendsViewController: UIViewController, UITableViewDelegate, UITabl
                                 for i in querySnapshot!.documents {
                                     //check to see if friend is already invitied
                                     if(i.documentID as String == id as! String ){
+                                        flag = false
                                         if let imageString = ((friendInfo["picture"] as? [String: Any])?["data"] as? [String: Any])?["url"] as? String {
                                             print(imageString)
                                             let imageURL = URL(string: imageString)
@@ -264,17 +294,19 @@ class SelectFriendsViewController: UIViewController, UITableViewDelegate, UITabl
                                                     imageView.contentMode = UIViewContentMode.scaleAspectFit
                                                     print("done")
                                                     self.selectedItems.append(friend(name: name as! String, id: id as! String, pic: imageView))
+                                                    self.FriendsTable.reloadData()
+
+                                                    print("appended one item to selectedItems")
                                                     
                                                 }
                                             }
                                             //Download image from imageURL
                                         }
                                        
-                                        print("shit")
-                                        flag = false
                                     }
+                                  
                                     //add friend to selected
-                                }
+                            }
                             if(flag){
                                 if let imageString = ((friendInfo["picture"] as? [String: Any])?["data"] as? [String: Any])?["url"] as? String {
                                     print(imageString)
@@ -285,17 +317,19 @@ class SelectFriendsViewController: UIViewController, UITableViewDelegate, UITabl
                                     print("download pic")
                                     DispatchQueue.global(qos: .userInitiated).async {
                                         
-                                        let imageData:NSData = NSData(contentsOf: imageURL!)!
-                                        let imageView = UIImageView(frame: CGRect(x:0, y:0, width:200, height:200))
-                                        imageView.center = self.view.center
-                                        print("task queued")
-                                        // When from background thread, UI needs to be updated on main_queue
+                                      
                                         DispatchQueue.main.async {
+                                            let imageData:NSData = NSData(contentsOf: imageURL!)!
+                                            let imageView = UIImageView(frame: CGRect(x:0, y:0, width:200, height:200))
+                                            imageView.center = self.view.center
+                                            print("task queued")
+                                            // When from background thread, UI needs to be updated on main_queue
                                             let image = UIImage(data: imageData as Data)
                                             imageView.image = image
                                             imageView.contentMode = UIViewContentMode.scaleAspectFit
                                             print("done")
                                             self.items.append(friend(name: name as! String, id: id as! String, pic: imageView))
+                                            print("Appended to Items")
 
                                         }
                                     }
@@ -303,12 +337,12 @@ class SelectFriendsViewController: UIViewController, UITableViewDelegate, UITabl
                                 }
                                 
 
-                            }
-                        
                                 self.FriendsTable.reloadData()
+
+                        
                             
                             }
-                        
+                        }
                         self.filteredItems = self.items
                       
                         print("trying to grab picture")

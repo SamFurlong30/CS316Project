@@ -10,22 +10,14 @@ import UIKit
 
 class PartyCell: UITableViewCell {
 
-    @IBOutlet weak var Analytics: UIButton!
-    @IBOutlet weak var EditParty: UIButton!
     
-    @IBOutlet weak var VerifyParty: UIButton!
     @IBOutlet weak var PartyName: UILabel!
-    @IBOutlet weak var DeletePartyButton: UIButton!
     
-    @IBOutlet weak var StartTimeEndTime: UILabel!
     @IBOutlet weak var StartDate: UILabel!
     
-    @IBOutlet weak var AddBouncers: UIButton!
-    @IBOutlet weak var RSVP: UILabel!
   
     @IBOutlet weak var PartyImage: UIImageView!
     
-    @IBOutlet weak var Invite: UIButton!
     @IBOutlet weak var Location: UITextView!
     /*
      // Only override draw() if you perform custom drawing.

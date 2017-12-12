@@ -14,7 +14,7 @@ class VerifyViewController: UIViewController,AVCaptureMetadataOutputObjectsDeleg
 
 
     // MARK: - QRCodeReaderViewController Delegate Methods
-    var currentParty: String!
+    var currentParty: pCell!
     var videoCaptureDevice: AVCaptureDevice = AVCaptureDevice.default(for: AVMediaType.video)!
     var device = AVCaptureDevice.default(for: AVMediaType.video)
     var output = AVCaptureMetadataOutput()
@@ -24,12 +24,15 @@ class VerifyViewController: UIViewController,AVCaptureMetadataOutputObjectsDeleg
     var code: String = ""
     var isVerified: Bool = false
     var scannedCode = UILabel()
-
+    var currentRow: Int!
  
     override func viewDidLoad() {
         super.viewDidLoad()
         self.setupCamera()
         self.addLabelForDisplayingCode()
+        let right = UISwipeGestureRecognizer(target: self, action: #selector(doneAction))
+        right.direction = .right
+        self.view.addGestureRecognizer(right)
         // Do any additional setup after loading the view.
     }
     private func setupCamera() {
@@ -65,24 +68,39 @@ class VerifyViewController: UIViewController,AVCaptureMetadataOutputObjectsDeleg
             print("Could not add metadata output")
         }
     }
-    @objc func doneAction(sender: UIButton){
+    @objc func doneAction(sender: UISwipeGestureRecognizer){
         let storyboard : UIStoryboard = UIStoryboard(name: "Main", bundle: nil)
         
-        let party = storyboard.instantiateViewController(withIdentifier: "PartyViewController") as! UIViewController
-        self.present(party, animated: false)
+        let partyView = storyboard.instantiateViewController(withIdentifier: "InduvidualPartyViewController") as! InduvidualPartyViewController
+        self.present(partyView, animated: false)
+
+        partyView.partyInfo = currentParty
+        partyView.currentRow = self.currentRow
+        partyView.PartyDate.text = currentParty.date
+        partyView.PartyImage.image = currentParty.image
+        partyView.PartyDescription.text = currentParty.partyDescription
+        partyView.PartyLocation.text = currentParty.partyAddress
+        partyView.PartyNameLabel.text = currentParty.partyName
+        
+        if(currentParty.startMinute < 10){
+            partyView.PartyStartTime.text = "Start Time:" + String(currentParty.startHour) + ":0" + String(currentParty.startMinute)
+        }
+        else{
+            partyView.PartyStartTime.text = "Start Time:" + String(currentParty.startHour) + ":" + String(currentParty.startMinute)
+            
+        }
+        if(currentParty.endMinute < 10){
+            partyView.PartyEndTime.text = "Start Time:" + String(currentParty.endHour) + ":0" + String(currentParty.endMinute)
+        }
+        else{
+            partyView.PartyStartTime.text = "Start Time:" + String(currentParty.endHour) + ":" + String(currentParty.endMinute)
+            
+        }
     }
     private func addLabelForDisplayingCode() {
         
         view.addSubview(scannedCode)
-        let done = UIButton()
-        done.titleLabel?.text = "Done"
-        done.addTarget(self, action: #selector(doneAction), for: .touchUpInside)
-        view.addSubview(done)
-        done.translatesAutoresizingMaskIntoConstraints = false
-        done.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: 0).isActive = true
-        done.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 0).isActive = true
-        done.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: 0).isActive = true
-        done.heightAnchor.constraint(equalToConstant: 100).isActive = true
+       
         scannedCode.translatesAutoresizingMaskIntoConstraints = false
         scannedCode.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -20.0).isActive = true
         scannedCode.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20.0).isActive = true
@@ -125,7 +143,7 @@ class VerifyViewController: UIViewController,AVCaptureMetadataOutputObjectsDeleg
             code = readableObject.stringValue!
         print(code)
         print("code")
-        db.collection("RSVP").document(currentParty).collection("Invitees").getDocuments{ (querySnapshot,error) in
+        db.collection("RSVP").document(currentParty.documentID).collection("Invitees").getDocuments{ (querySnapshot,error) in
             var flag = true
             for document in (querySnapshot?.documents)!{
                 print(document.documentID)
@@ -135,7 +153,7 @@ class VerifyViewController: UIViewController,AVCaptureMetadataOutputObjectsDeleg
                     self.scannedCode.text = "Verified"
                     flag = false
                     self.isVerified = true
-                    db.collection("checkedIn").document(self.currentParty).collection("Invitees").document(self.code).setData(["checkedInBy" : ""])
+                    db.collection("checkedIn").document(self.currentParty.documentID).collection("Invitees").document(self.code).setData(["checkedInBy" : ""])
                 }
                 print(self.code)
                 print(document.documentID)

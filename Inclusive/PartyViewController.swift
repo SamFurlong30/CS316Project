@@ -103,66 +103,21 @@ class PartyViewController: UIViewController,UITableViewDelegate, UITableViewData
         let popover = InputPopover.popoverPresentationController!
         popover.delegate = self
         popover.permittedArrowDirections = .up
-        if(act == 1){
-            InputPopover.isInitial = false
-            present(InputPopover, animated: true, completion: nil)
-
-        var cell = filteredItems[send]
-            print(cell)
-        InputPopover.NameInput.text = cell.partyName
-        InputPopover.InviteInput.text = cell.partyDescription
-        InputPopover.LocationInput.text = cell.partyAddress
-            let dateFormatter = DateFormatter()
-            dateFormatter.dateFormat =  "mm dd yyyy"
-            let date = dateFormatter.date(from: cell.date)
-            var calendar = Calendar(identifier: .gregorian)
-            var components = DateComponents(year: 2017, month:1, day: 1, hour: cell.startHour, minute: cell.startMinute, second: 00)
-            let startTime = calendar.date(from: components)!
-            components = DateComponents(year: 2017, month:1, day: 1, hour: cell.endHour, minute: cell.endMinute, second: 00)
-            let endTime = calendar.date(from: components)!
-            
-
-            InputPopover.StartDatePicker.date = startTime
-            InputPopover.EndTimePicker.date = endTime
-            InputPopover.PartyImageView.image = cell.image
-        InputPopover.currentRow = send
-
-        return
-        }
         present(InputPopover, animated: true, completion: nil)
 
-    }
+        InputPopover.DoneButton.addTarget(self, action: #selector(doneAction), for: .touchUpInside)
+        
 
-    @objc func doneActionForEdit(sender: UIButton){
-       
-        self.TableView.reloadData()
+    }
+    @objc func doneAction(sender: Any){
+        self.dismiss(animated: true, completion: {
+            //maybe something here but probably not
+        })
     
+    }
 
-    }
-  
-    @objc
-    func editTapped(sender: UIButton){
-        presentAndRecordInput(act:1, send: sender.tag)
-    }
-    @objc
-    func verifyTapped(sender: UIButton){
-      
-        
-        let nextViewController = VerifyViewController()
-        nextViewController.currentParty = filteredItems[sender.tag].documentID
-        self.present(nextViewController, animated:true, completion:nil)
-    }
-    @objc
-    func inviteTapped(sender: UIButton){
-        
-        let storyBoard : UIStoryboard = UIStoryboard(name: "Main", bundle:nil)
-        let nextViewController = storyBoard.instantiateViewController(withIdentifier: "SelectFriendsViewController") as! SelectFriendsViewController
-        nextViewController.currentDocument = filteredItems[sender.tag].documentID
-        nextViewController.isInviteMode = true
-
-        self.present(nextViewController, animated:true, completion:nil)
-
-    }
+ 
+ 
     private func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat
     {
         return 175.0;//Your custom row height
@@ -213,66 +168,12 @@ class PartyViewController: UIViewController,UITableViewDelegate, UITableViewData
         cell.PartyName.text = currentCell.partyName
         cell.Location.text = currentCell.partyAddress
         cell.Location.allowsEditingTextAttributes = false
-
-       
-                if(currentCell.isActive){
-                cell.VerifyParty.tag = indexPath.row
-                cell.VerifyParty.addTarget(self, action:#selector(verifyTapped), for: UIControlEvents.touchUpInside)
-                cell.Invite.isHidden = true
-                    cell.EditParty.isHidden = true
-                
-                }
-                if(!currentCell.isStale && !currentCell.isActive){
-                    cell.Invite.isHidden = false
-                    cell.EditParty.isHidden = false
-                cell.Invite.addTarget(self, action:#selector(inviteTapped), for: UIControlEvents.touchUpInside)
-                    cell.Invite.tag = indexPath.row
-                    cell.VerifyParty.isHidden = true
-                    cell.EditParty.addTarget(self, action:#selector(editTapped), for: UIControlEvents.touchUpInside)
-                    cell.EditParty.tag = indexPath.row
-                    if(currentCell.startMinute < 10){
-                        cell.StartTimeEndTime.text = "Start Time:" + String(currentCell.startHour) + ":0" + String(currentCell.startMinute)
-                    }
-                    else{
-                        cell.StartTimeEndTime.text = "Start Time:" + String(currentCell.startHour) + ":" + String(currentCell.startMinute)
-                        
-                    }
-                }
-                
-        
-            if(currentCell.isStale){
-                cell.Invite.isHidden = true
-                cell.EditParty.isHidden = true
-                cell.VerifyParty.isHidden = true
-            }
-            if(!currentCell.isBouncer){
-                cell.DeletePartyButton.addTarget(self, action:#selector(deleteTapped), for: UIControlEvents.touchUpInside)
-                cell.DeletePartyButton.tag = indexPath.row
-                cell.AddBouncers.addTarget(self,action:#selector(addBouncers), for: UIControlEvents.touchUpInside)
-                cell.AddBouncers.tag = indexPath.row
-
-            }
-            else{
-                cell.DeletePartyButton.isHidden = true
-                cell.AddBouncers.isHidden = true
-                cell.Analytics.isHidden = true
-                cell.Invite.isHidden = true
-                cell.EditParty.isHidden = true
-                cell.PartyName.text = "Bouncer for:" + cell.PartyName.text! as! String
-                
-            }
-        if(currentCell.endMinute < 10){
-            cell.StartTimeEndTime.text = "End Time:" + String(currentCell.endHour) + ":0" + String(currentCell.endMinute)
-        }
-        else{
-            cell.StartTimeEndTime.text = "Start Time:" + String(currentCell.startHour) + ":" + String(currentCell.startMinute)
-            
-        }
-
-       
-        
+        cell.PartyName.text = currentCell.partyName
         cell.PartyImage.image = currentCell.image
+        print(currentCell.image)
+        print(currentCell.image)
         cell.StartDate.text = currentCell.date
+        cell.PartyImage.image = currentCell.image
       
       
         //else is not active
@@ -282,47 +183,83 @@ class PartyViewController: UIViewController,UITableViewDelegate, UITableViewData
         return cell as UITableViewCell;
 
     }
-    @objc func addBouncers(sender: UIButton){
-        
-        let storyBoard : UIStoryboard = UIStoryboard(name: "Main", bundle:nil)
-        let nextViewController = storyBoard.instantiateViewController(withIdentifier: "SelectFriendsViewController") as! SelectFriendsViewController
-        nextViewController.currentDocument = filteredItems[sender.tag].documentID
-        nextViewController.isInviteMode = false
 
-        self.present(nextViewController, animated:true, completion:nil)
-    }
     
     @IBAction func ManualLogout(_ sender: Any) {
         let storyBoard : UIStoryboard = UIStoryboard(name: "Main", bundle:nil)
         let nextViewController = storyBoard.instantiateViewController(withIdentifier: "ViewController") as UIViewController
         self.present(nextViewController, animated:true, completion:nil)
     }
-    @objc func didSwipe(recognizer: UIGestureRecognizer) {
-        if recognizer.state == UIGestureRecognizerState.ended {
-            let swipeLocation = recognizer.location(in: self.TableView)
+    @objc func didSwipe(swipe: UISwipeGestureRecognizer) {
+        print("fuck")
+        print(swipe.direction)
+        if  swipe.direction == UISwipeGestureRecognizerDirection.left
+        {
+            let gesture = swipe as UIGestureRecognizer
+            let swipeLocation = gesture.location(in: self.TableView)
             if let swipedIndexPath = TableView.indexPathForRow(at: swipeLocation) {
                 if let swipedCell = self.TableView.cellForRow(at: swipedIndexPath) {
                     // Swipe happened. Do stuff!
                     print("swipe")
                     let storyBoard : UIStoryboard = UIStoryboard(name: "Main", bundle:nil)
-                    let nextViewController = storyBoard.instantiateViewController(withIdentifier: "InduvidualPartyViewController") as UIViewController
-                    self.present(nextViewController, animated:true, completion:nil)
-
-                    
+                    let partyView = storyBoard.instantiateViewController(withIdentifier: "InduvidualPartyViewController") as! InduvidualPartyViewController
+                    let transition = CATransition()
+                    transition.duration = 0.5
+                    transition.type = kCATransitionPush
+                    transition.subtype = kCATransitionFromRight
+                    transition.timingFunction = CAMediaTimingFunction(name:kCAMediaTimingFunctionEaseInEaseOut)
+                    self.view.window!.layer.add(transition, forKey: kCATransition)
+                    let party:pCell = self.filteredItems[swipedIndexPath.row]
+                    partyView.partyInfo = party
+                    self.present(partyView, animated:false, completion:nil)
+                    partyView.currentRow = swipedIndexPath.row
+                    partyView.PartyDate.text = party.date
+                    partyView.PartyImage.image = party.image
+                    partyView.PartyDescription.text = party.partyDescription
+                    partyView.PartyLocation.text = party.partyAddress
+                    partyView.PartyNameLabel.text = party.partyName
+                    if(party.isStale){
+                        //hide bouncers and invitees button if party is active
+                        partyView.ManageBouncers.isHidden = true
+                        partyView.ManageInvitees.isHidden = true
+                    }
+                    if(party.startMinute < 10){
+                        partyView.PartyStartTime.text = "Start Time:" + String(party.startHour) + ":0" + String(party.startMinute)
+                    }
+                    else{
+                        partyView.PartyStartTime.text = "Start Time:" + String(party.startHour) + ":" + String(party.startMinute)
+                        
+                    }
+                    if(party.endMinute < 10){
+                        partyView.PartyEndTime.text = "Start Time:" + String(party.endHour) + ":0" + String(party.endMinute)
+                    }
+                    else{
+                        partyView.PartyStartTime.text = "Start Time:" + String(party.endHour) + ":" + String(party.endMinute)
+                        
+                    }
                 }
             }
         }
+        
     }
     override func viewDidLoad() {
         super.viewDidLoad()
-        var recognizer = UISwipeGestureRecognizer(target: self, action: #selector(didSwipe))
-        
-        self.TableView.addGestureRecognizer(recognizer)
+        let left = UISwipeGestureRecognizer(target: self, action: #selector(didSwipe))
+        left.direction = .left
+        self.TableView.addGestureRecognizer(left)
+        let right = UISwipeGestureRecognizer(target: self, action: #selector(didSwipe))
+        right.direction = .right
+        self.TableView.addGestureRecognizer(right)
+        if(storeItems.count>1){
         items = storeItems
         filteredItems = items
-        self.getParties()
+        }
+        self.Filter()
+
         TableView.dataSource = self
         TableView.reloadData()
+        self.getParties()
+
         self.searchController.searchResultsUpdater = self
         
 }
@@ -337,6 +274,8 @@ class PartyViewController: UIViewController,UITableViewDelegate, UITableViewData
                     let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
                     let parties = json["partyData"] as? [[String: Any]] {
                     print(parties)
+                    self.items.removeAll()
+                    storeItems.removeAll()
                     for party in parties {
                         self.jsonToPCell(party:party)
                     }
@@ -360,34 +299,50 @@ class PartyViewController: UIViewController,UITableViewDelegate, UITableViewData
         let endHour = party["endHour"] as! Int
         let isActive = party["isActive"] as! Bool
         let isStale = party["isStale"] as! Bool
-
-       // let imageURL:String = party["partyID"] as! String + ".png"
-//        let pathReference = storage.reference(withPath: "PartyImages/"+imageURL)
-//        pathReference.getData(maxSize: 1024 * 1024 * 1024) { data, error in
-//            if let error = error {
-//                // Uh-oh, an error occurred!
-//                print("broken")
-//
-//                print(error)
-//            } else {
-        
-                // Data for "images/island.jpg" is returned
-               // let image = UIImage(data: data!)
-                let image = UIImage()
-        var myParty: pCell = pCell(partyName: name, partyAddress: location, partyDescription: description, documentID: "", startHour: startHour, startMinute: startMinute, endHour: endHour, endMinute: endMinute, date: date, isBouncer: party["hostType"] as! String != "host", image: image, isStale: isStale, isActive: isActive)
-        print(myParty)
-        self.items.append(myParty)
-        storeItems.append(myParty)
-                print("endpoint hit and reload")
+        let partyID = party["partyId"] as! String
+        var myParty: pCell = pCell(partyName: name, partyAddress: location, partyDescription: description, documentID: partyID , startHour: startHour, startMinute: startMinute, endHour: endHour, endMinute: endMinute, date: date, isBouncer: party["hostType"] as! String != "host", image: UIImage(), isStale: isStale, isActive: isActive)
         DispatchQueue.main.sync() {
             // place code for main thread here
             self.Filter()
             self.TableView.reloadData()
-
+            self.items.append(myParty)
+            storeItems.append(myParty)
+            
         }
+        let imageURL:String = party["partyId"] as! String + ".png"
+        let pathReference = storage.reference(withPath: "PartyImages/"+imageURL)
+        pathReference.getData(maxSize: 1024 * 1024 * 1024) { data, error in
+            if let error = error {
+                // Uh-oh, an error occurred!
+                print("broken")
+
+                print(error)
+            }
+            else if data != nil {
+               //  Data for "images/island.jpg" is returned
+                
+                myParty.image = UIImage(data: data! as Data)!
+                
+               
+                print("endpoint hit and reload")
+                self.items = self.items.filter{$0.documentID != myParty.documentID}
+                self.items.append(myParty)
+                
+                storeItems = self.items
+                
+                self.Filter()
+
+                
+           
+            print("hit here")
+
         
-           // }
-     //   }
+                
+    }
+            else{
+                print("no error but also no data")
+            }
+        }
 
     }
   
