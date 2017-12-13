@@ -101,18 +101,29 @@ class PartyViewController: UIViewController,UITableViewDelegate, UITableViewData
         InputPopover = storyboard.instantiateViewController(withIdentifier: "PartyInput") as! PartyInputViewController
         InputPopover.modalPresentationStyle = .popover
         let popover = InputPopover.popoverPresentationController!
+        popover.sourceView = self.view
         popover.delegate = self
         popover.permittedArrowDirections = .up
-        present(InputPopover, animated: true, completion: nil)
-
+        self.present(InputPopover, animated: true, completion: nil)
         InputPopover.DoneButton.addTarget(self, action: #selector(doneAction), for: .touchUpInside)
+        InputPopover.doneTransition = {
+            self.viewDidLoad()
+            print("done")
+        }
         
 
     }
+    func adaptivePresentationStyle(for controller: UIPresentationController) -> UIModalPresentationStyle {
+        return UIModalPresentationStyle.fullScreen
+    }
+    func popoverPresentationControllerDidDismissPopover(_ popoverPresentationController: UIPopoverPresentationController) {
+        print("didDismiss")
+        self.items = storeItems
+        self.filteredItems = storeItems
+        self.Filter()
+        
+    }
     @objc func doneAction(sender: Any){
-        self.dismiss(animated: true, completion: {
-            //maybe something here but probably not
-        })
     
     }
 
@@ -209,7 +220,7 @@ class PartyViewController: UIViewController,UITableViewDelegate, UITableViewData
                     transition.subtype = kCATransitionFromRight
                     transition.timingFunction = CAMediaTimingFunction(name:kCAMediaTimingFunctionEaseInEaseOut)
                     self.view.window!.layer.add(transition, forKey: kCATransition)
-                    let party:pCell = self.filteredItems[swipedIndexPath.row]
+                    let party = filteredItems[swipedIndexPath.row]
                     partyView.partyInfo = party
                     self.present(partyView, animated:false, completion:nil)
                     partyView.currentRow = swipedIndexPath.row
@@ -218,7 +229,7 @@ class PartyViewController: UIViewController,UITableViewDelegate, UITableViewData
                     partyView.PartyDescription.text = party.partyDescription
                     partyView.PartyLocation.text = party.partyAddress
                     partyView.PartyNameLabel.text = party.partyName
-                    if(party.isStale){
+                    if(party.isStale || party.isBouncer){
                         //hide bouncers and invitees button if party is active
                         partyView.ManageBouncers.isHidden = true
                         partyView.ManageInvitees.isHidden = true
@@ -250,17 +261,22 @@ class PartyViewController: UIViewController,UITableViewDelegate, UITableViewData
         let right = UISwipeGestureRecognizer(target: self, action: #selector(didSwipe))
         right.direction = .right
         self.TableView.addGestureRecognizer(right)
-        if(storeItems.count>1){
-        items = storeItems
-        filteredItems = items
-        }
-        self.Filter()
-
+        
         TableView.dataSource = self
         TableView.reloadData()
-        self.getParties()
-
+        
         self.searchController.searchResultsUpdater = self
+        if(storeItems.count>0){
+        items = storeItems
+        filteredItems = items
+        self.Filter()
+            
+        }
+        else{
+        self.getParties()
+        }
+
+
         
 }
     func getParties(){
@@ -268,7 +284,7 @@ class PartyViewController: UIViewController,UITableViewDelegate, UITableViewData
         let url = URL(string: "https://us-central1-inclu-af7f5.cloudfunctions.net/getActiveParties?uid=" + FBSDKAccessToken.current().userID)
         
         let task = URLSession.shared.dataTask(with: url!) { (data, response, error) in
-            let json = try? JSONSerialization.jsonObject(with: data!, options: [])
+            let json = try?JSONSerialization.jsonObject(with: data!, options: [])
             do {
                 if let data = data,
                     let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
@@ -283,9 +299,9 @@ class PartyViewController: UIViewController,UITableViewDelegate, UITableViewData
             } catch {
                 print("Error deserializing JSON: \(error)")
             }
+            
 
         }
-        task.progress.isFinished
         task.resume()
     }
     func jsonToPCell(party:[String:Any]){
@@ -353,15 +369,15 @@ class PartyViewController: UIViewController,UITableViewDelegate, UITableViewData
     }
     
 
-    /*
+
     // MARK: - Navigation
 
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
+    
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destinationViewController.
-        // Pass the selected object to the new view controller.
+        segue.destination.popoverPresentationController?.delegate = self
+
     }
-    */
+
     
 
 }

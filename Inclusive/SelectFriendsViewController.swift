@@ -10,7 +10,7 @@ import UIKit
 import FBSDKLoginKit
 import FacebookCore
 import FirebaseAuth
-
+import JavaScriptCore
 struct friend{
     init(name: String, id: String, pic: UIImageView) {
         self.name = name
@@ -23,78 +23,63 @@ struct friend{
     
 }
 class SelectFriendsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UISearchResultsUpdating {
+    var donePressed:(()->Void)?
     let searchController = UISearchController(searchResultsController: nil)
     var currentDocument: String!
-    
     var isInviteMode: Bool!
     
     @IBAction func DoneAction(_ sender: Any) {
     
-        print("done action")
-      
-        var col:String
+        var requestString:String = ""
         if(isInviteMode){
-            col = "invitedTo"
+            requestString = "https://us-central1-inclu-af7f5.cloudfunctions.net/addMembersToParty?uid="
+
         }
         else{
-            col = "Bouncers"
-            
+            requestString = "https://us-central1-inclu-af7f5.cloudfunctions.net/addBouncersToParty?uid="
         }
-        let collection = db.collection(col).document(self.currentDocument).collection("Invitees")
-        collection.getDocuments { (docset, error) in
-            // An error occurred.
-            guard let docset = docset else {
-                return
-            }
-            // There's nothing to delete.
-            guard docset.count > 0 else {
-                for s in self.selectedItems {
-                    print(s)
-                    if(s.name != "nahfam"){
-                        
-                        collection.document(s.fbID).setData(["InvitedBy": FBSDKAccessToken.current().userID]){ err in
-                            if let err = err {
-                                print("Error writing document: \(err)")
-                            } else {
-                                print("Document successfully written!")
-                            }
-                        }
-                    }
-                }
-                return
-            }
-            
-            let batch = collection.firestore.batch()
-            docset.documents.forEach { batch.deleteDocument($0.reference) }
-            
-            batch.commit { (batchError) in
-                if let batchError = batchError {
-                    // Stop the deletion process and handle the error. Some elements
-                    // may have been deleted.
-                } else {
-                    //this assumes less than 1000 people parties
-                    // ohhh fucking well
-                    for s in self.selectedItems {
-                        print(s)
-                        if(s.name != "nahfam"){
-                            
-                            collection.document(s.fbID).setData(["InvitedBy": FBSDKAccessToken.current().userID]){ err in
-                                if let err = err {
-                                    print("Error writing document: \(err)")
-                                } else {
-                                    print("Document successfully written!")
-                                }
-                            }
-                        }
-                    }
-
-                }
-            }
+        
+        
+        var ids: [String] = []
+        
+        for item in self.selectedItems {
+            ids.append(item.fbID)
         }
-                //add all of the new selected friends to the database
-        self.dismiss(animated: true, completion: nil)
+        
+        let json: [String:[Any]] = ["invitedTo": ids]     
 
         
+        // create post request
+        let url = URL(string: requestString + FBSDKAccessToken.current().userID + "&pid=" + self.currentDocument)!
+        
+        var request = URLRequest(url: url)
+        
+        request.setValue("application/json; charset=utf-8", forHTTPHeaderField: "Content-Type")  // the request is JSON
+        request.setValue("application/json; charset=utf-8", forHTTPHeaderField: "Accept")        // the expected response is also JSON
+        request.httpMethod = "POST"
+        
+        request.httpBody = try! JSONSerialization.data(withJSONObject: json)
+        
+        let task = URLSession.shared.dataTask(with: request) { data, response, error in
+            guard let data = data, error == nil else {
+                print(error)                                 // some fundamental network error
+                return
+            }
+            
+            do {
+                let responseObject = try JSONSerialization.jsonObject(with: data)
+                print(responseObject)
+            } catch let jsonError {
+                print(jsonError)
+                print(String(data: data, encoding: .utf8))   // often the `data` contains informative description of the nature of the error, so let's look at that, too
+            }
+        }
+        task.resume()
+    
+                //add all of the new selected friends to the database
+        self.dismiss(animated: true, completion: donePressed!)
+       
+       
     }
     
  func ClearAction() {
@@ -284,11 +269,12 @@ class SelectFriendsViewController: UIViewController, UITableViewDelegate, UITabl
                                             DispatchQueue.global(qos: .userInitiated).async {
                                                 
                                                 let imageData:NSData = NSData(contentsOf: imageURL!)!
-                                                let imageView = UIImageView(frame: CGRect(x:0, y:0, width:200, height:200))
-                                                imageView.center = self.view.center
+                                                
                                                 print("task queued")
                                                 // When from background thread, UI needs to be updated on main_queue
                                                 DispatchQueue.main.async {
+                                                    let imageView = UIImageView(frame: CGRect(x:0, y:0, width:200, height:200))
+                                                    imageView.center = self.view.center
                                                     let image = UIImage(data: imageData as Data)
                                                     imageView.image = image
                                                     imageView.contentMode = UIViewContentMode.scaleAspectFit
@@ -344,7 +330,7 @@ class SelectFriendsViewController: UIViewController, UITableViewDelegate, UITabl
                             }
                         }
                         self.filteredItems = self.items
-                      
+                        
                         print("trying to grab picture")
                         print(friendInfo)
                     

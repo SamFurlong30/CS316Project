@@ -13,6 +13,9 @@ import FacebookCore
 import FirebaseFirestore
     
 class InduvidualPartyViewController: UIViewController, UIPopoverPresentationControllerDelegate, UITableViewDelegate, UITableViewDataSource {
+    var invites:Int = 0
+    var checkIns:Int = 0
+    var RSVPs:Int = 0
     struct typedPerson {
         var name: String!
         var email: String!
@@ -21,7 +24,14 @@ class InduvidualPartyViewController: UIViewController, UIPopoverPresentationCont
     @IBAction func TypeSelector(_ sender: Any) {
         self.Filter()
     }
+    
+    var attendees: String!
+    var rsvps: String!
+    var isInviteMode: Bool!
+    
+    
     @IBOutlet weak var PartyNameLabel: UILabel!
+    @IBOutlet weak var TotalLabel: UILabel!
     @IBOutlet weak var PartyImage: UIImageView!
     @IBOutlet weak var PartyDate: UILabel!
     
@@ -31,15 +41,19 @@ class InduvidualPartyViewController: UIViewController, UIPopoverPresentationCont
     @IBOutlet weak var PartyEndTime: UILabel!
     @IBOutlet weak var TableView: UITableView!
     @IBOutlet weak var PartyLocation: UITextView!
-    
+
     @IBAction func InviteAction(_ sender: Any) {
         let storyBoard : UIStoryboard = UIStoryboard(name: "Main", bundle:nil)
         let nextViewController = storyBoard.instantiateViewController(withIdentifier: "SelectFriendsViewController") as! SelectFriendsViewController
         nextViewController.currentDocument = partyInfo.documentID
         nextViewController.isInviteMode = true
         nextViewController.currentDocument = self.partyInfo.documentID
+        nextViewController.donePressed = {
+            self.viewDidLoad()
+        }
         self.present(nextViewController, animated:true, completion:nil)
     }
+
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return self.filteredItems.count;
     }
@@ -51,6 +65,7 @@ class InduvidualPartyViewController: UIViewController, UIPopoverPresentationCont
         let cell = self.TableView.dequeueReusableCell(withIdentifier: "typeCell")! as UITableViewCell
         let person = filteredItems[indexPath.row]
         cell.textLabel?.text = person.name
+        cell.textLabel?.textColor = UIColor.white
         return cell
     }
     @IBAction func HostAction(_ sender: Any) {
@@ -58,6 +73,10 @@ class InduvidualPartyViewController: UIViewController, UIPopoverPresentationCont
         let nextViewController = storyBoard.instantiateViewController(withIdentifier: "SelectFriendsViewController") as! SelectFriendsViewController
         nextViewController.currentDocument = partyInfo.documentID
         nextViewController.isInviteMode = false
+        nextViewController.donePressed = {
+            self.viewDidLoad()
+
+        }
         present(nextViewController, animated:true, completion:nil)
     }
     
@@ -71,6 +90,8 @@ class InduvidualPartyViewController: UIViewController, UIPopoverPresentationCont
     
     @IBAction func VerifyAction(_ sender: Any) {
         let nextViewController = VerifyViewController()
+        nextViewController.currentParty = partyInfo
+        nextViewController.currentRow = currentRow
         nextViewController.currentParty = partyInfo
         self.present(nextViewController, animated:true, completion:nil)
     }
@@ -121,9 +142,32 @@ class InduvidualPartyViewController: UIViewController, UIPopoverPresentationCont
     @IBOutlet weak var ManageBouncers: UIButton!
     @IBOutlet weak var ManageInvitees: UIButton!
     override func viewDidLoad() {
+        super.viewDidLoad()
+
+    db.collection("Parties").document(partyInfo.documentID)
+            .addSnapshotListener { documentSnapshot, error in
+                guard let document = documentSnapshot else {
+                    print("Error fetching document: \(error!)")
+                    return
+                }
+                print(document.data())
+             self.invites = document.data()["numInvites"]! as! Int
+                self.RSVPs = document.data()["numRsvps"]! as! Int
+                if(self.partyInfo.isActive){
+                self.checkIns = document.data()["numCheckedIn"]! as! Int
+                    self.TotalLabel.text = "RSVPs: " +  String(self.RSVPs) + " Inivtes: " + String(self.invites) + " Attendees: " + String(self.checkIns)
+                    
+ 
+                }
+                else{
+                    self.TotalLabel.text = "RSVPs: " +  String(self.RSVPs) + " Invites: " + String(self.invites)
+                    
+                }
+              
+
+        }
         TableView.delegate = self
         TableView.dataSource = self 
-        super.viewDidLoad()
         let up = UISwipeGestureRecognizer(target: self, action: #selector(didSwipe))
         up.direction = .up
         self.view.addGestureRecognizer(up)
@@ -144,37 +188,72 @@ class InduvidualPartyViewController: UIViewController, UIPopoverPresentationCont
     }
     var InputPopover: PartyInputViewController!
     @objc func doneAction(sender: Any){
-        self.dismiss(animated: true, completion: {
-          //populate from Currentcell of popover
-            let party:pCell = self.InputPopover.currentCell
-            self.partyInfo = party
-            self.PartyDate.text = party.date
-            self.PartyImage.image = party.image
-            self.PartyDescription.text = party.partyDescription
-            self.PartyLocation.text = party.partyAddress
-            self.PartyNameLabel.text = party.partyName
-            
-            if(party.startMinute < 10){
-                self.PartyStartTime.text = "Start Time:" + String(party.startHour) + ":0" + String(party.startMinute)
-            }
-            else{
-                self.PartyStartTime.text = "Start Time:" + String(party.startHour) + ":" + String(party.startMinute)
-                
-            }
-            if(party.endMinute < 10){
-                self.PartyEndTime.text = "Start Time:" + String(party.endHour) + ":0" + String(party.endMinute)
-            }
-            else{
-                self.PartyStartTime.text = "Start Time:" + String(party.endHour) + ":" + String(party.endMinute)
-                
-            }        })
+//          //populate from Currentcell of popover
+//            let party:pCell = self.InputPopover.currentCell
+//            self.partyInfo = party
+//            self.PartyDate.text = party.date
+//            self.PartyImage.image = party.image
+//            self.PartyDescription.text = party.partyDescription
+//            self.PartyLocation.text = party.partyAddress
+//            self.PartyNameLabel.text = party.partyName
+//
+//            if(party.startMinute < 10){
+//                self.PartyStartTime.text = "Start Time:" + String(party.startHour) + ":0" + String(party.startMinute)
+//            }
+//            else{
+//                self.PartyStartTime.text = "Start Time:" + String(party.startHour) + ":" + String(party.startMinute)
+//
+//            }
+//            if(party.endMinute < 10){
+//                self.PartyEndTime.text = "End Time:" + String(party.endHour) + ":0" + String(party.endMinute)
+//            }
+//            else{
+//                self.PartyEndTime.text = "End Time:" + String(party.endHour) + ":" + String(party.endMinute)
+//
+//        }
+//
+      
         
     }
     func presentAndRecordInput(){
         
         let storyboard : UIStoryboard = UIStoryboard(name: "Main", bundle: nil)
-        
+      
         InputPopover = storyboard.instantiateViewController(withIdentifier: "PartyInput") as! PartyInputViewController
+        self.InputPopover.invites = self.invites
+        self.InputPopover.RSVPs = self.RSVPs
+        self.InputPopover.checkIns = self.checkIns
+        InputPopover.doneTransition = {
+            self.invites = self.InputPopover.invites
+            self.RSVPs = self.InputPopover.RSVPs
+            self.checkIns = self.InputPopover.checkIns
+            self.partyInfo = self.InputPopover.currentCell
+            self.PartyDate.text = self.partyInfo.date
+            self.PartyImage.image = self.partyInfo.image
+            self.PartyDescription.text = self.partyInfo.partyDescription
+            self.PartyLocation.text = self.partyInfo.partyAddress
+            self.PartyNameLabel.text = self.partyInfo.partyName
+            if(self.partyInfo.isStale){
+                //hide bouncers and invitees button if party is active
+                self.ManageBouncers.isHidden = true
+                self.ManageInvitees.isHidden = true
+            }
+            if(self.partyInfo.startMinute < 10){
+                self.PartyStartTime.text = "Start Time:" + String(self.partyInfo.startHour) + ":0" + String(self.partyInfo.startMinute)
+            }
+            else{
+               self.PartyStartTime.text = "Start Time:" + String(self.partyInfo.startHour) + ":" + String(self.partyInfo.startMinute)
+                
+            }
+            if(self.partyInfo.endMinute < 10){
+                self.PartyEndTime.text = "Start Time:" + String(self.partyInfo.endHour) + ":0" + String(self.partyInfo.endMinute)
+            }
+            else{
+                self.PartyStartTime.text = "Start Time:" + String(self.partyInfo.endHour) + ":" + String(self.partyInfo.endMinute)
+                
+            }
+            
+        }
         InputPopover.modalPresentationStyle = .popover
 
         let popover = InputPopover.popoverPresentationController!
@@ -198,7 +277,7 @@ class InduvidualPartyViewController: UIViewController, UIPopoverPresentationCont
         components = DateComponents(year: 2017, month:1, day: 1, hour: (cell?.endHour)!, minute: (cell?.endMinute)!, second: 00)
             let endTime = calendar.date(from: components)!
             
-            
+        //InputPopover.StartDatePicker.date = date!
             InputPopover.StartDatePicker.date = startTime
             InputPopover.EndTimePicker.date = endTime
         InputPopover.PartyImageView.image = cell?.image
@@ -217,7 +296,6 @@ class InduvidualPartyViewController: UIViewController, UIPopoverPresentationCont
         let task = URLSession.shared.dataTask(with: url!) { (data, response, error) in
             do {
                 let json = try? JSONSerialization.jsonObject(with: data!, options: []) as! [String: Any]
-                print(json)
                 let bouncers  = json!["bouncers"] as! [[String:Any]]
                 print(bouncers)
 
@@ -295,7 +373,6 @@ class InduvidualPartyViewController: UIViewController, UIPopoverPresentationCont
         
     }
     func Filter(){
-        print("filter")
         
         switch self.SegmentedPeople.selectedSegmentIndex{
         case 0:

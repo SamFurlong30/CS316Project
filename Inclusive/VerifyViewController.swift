@@ -72,9 +72,10 @@ class VerifyViewController: UIViewController,AVCaptureMetadataOutputObjectsDeleg
         let storyboard : UIStoryboard = UIStoryboard(name: "Main", bundle: nil)
         
         let partyView = storyboard.instantiateViewController(withIdentifier: "InduvidualPartyViewController") as! InduvidualPartyViewController
+        partyView.partyInfo = currentParty
+
         self.present(partyView, animated: false)
 
-        partyView.partyInfo = currentParty
         partyView.currentRow = self.currentRow
         partyView.PartyDate.text = currentParty.date
         partyView.PartyImage.image = currentParty.image

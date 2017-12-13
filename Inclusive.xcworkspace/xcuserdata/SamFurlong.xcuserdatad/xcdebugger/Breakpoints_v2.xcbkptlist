@@ -10,11 +10,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Inclusive/PartyViewController.swift"
-            timestampString = "534736479.456598"
+            timestampString = "534889265.428213"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "130"
-            endingLineNumber = "130"
+            startingLineNumber = "141"
+            endingLineNumber = "141"
             landmarkName = "numberOfSections(in:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -26,7 +26,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Inclusive/PartyCell.swift"
-            timestampString = "534736479.456748"
+            timestampString = "534832932.145777"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "6"
@@ -119,11 +119,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Inclusive/PartyViewController.swift"
-            timestampString = "534736479.456801"
+            timestampString = "534889265.428334"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "126"
-            endingLineNumber = "126"
+            startingLineNumber = "137"
+            endingLineNumber = "137"
             landmarkName = "tableView(_:numberOfRowsInSection:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -135,7 +135,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Inclusive/PartyCell.swift"
-            timestampString = "534736479.456927"
+            timestampString = "534832932.145989"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "5"
@@ -228,11 +228,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Inclusive/PartyInputViewController.swift"
-            timestampString = "534736479.456974"
+            timestampString = "534832932.146039"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "120"
-            endingLineNumber = "120"
+            startingLineNumber = "136"
+            endingLineNumber = "136"
             landmarkName = "viewDidLoad()"
             landmarkType = "7">
          </BreakpointContent>
@@ -244,11 +244,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Inclusive/SelectFriendsViewController.swift"
-            timestampString = "534736479.457023"
+            timestampString = "534832932.146105"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "236"
-            endingLineNumber = "236"
+            startingLineNumber = "221"
+            endingLineNumber = "221"
             landmarkName = "viewDidLoad()"
             landmarkType = "7">
          </BreakpointContent>
@@ -260,7 +260,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Inclusive/PartyViewController.swift"
-            timestampString = "534736479.457383"
+            timestampString = "534889265.428453"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "64"
@@ -276,11 +276,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Inclusive/InduvidualPartyViewController.swift"
-            timestampString = "534736479.457527"
+            timestampString = "534832932.14633"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "33"
-            endingLineNumber = "33"
+            startingLineNumber = "43"
+            endingLineNumber = "43"
             landmarkName = "InduvidualPartyViewController"
             landmarkType = "3">
             <Locations>
@@ -353,28 +353,12 @@
             shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "Inclusive/SelectFriendsViewController.swift"
-            timestampString = "534736479.457635"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "35"
-            endingLineNumber = "35"
-            landmarkName = "DoneAction(_:)"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
             filePath = "Inclusive/InduvidualPartyViewController.swift"
-            timestampString = "534736479.457876"
+            timestampString = "534832932.146479"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "17"
-            endingLineNumber = "17"
+            startingLineNumber = "20"
+            endingLineNumber = "20"
             landmarkName = "typedPerson"
             landmarkType = "14">
             <Locations>
@@ -433,7 +417,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Inclusive/InduvidualPartyViewController.swift"
-            timestampString = "534736479.457934"
+            timestampString = "534832932.146579"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "6"

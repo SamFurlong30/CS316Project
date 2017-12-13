@@ -16,9 +16,15 @@ class PartyInputViewController: UIViewController,  UIImagePickerControllerDelega
     var isInitial: Bool = true
     var currentRow: Int = 0
     var currentCell: pCell!
+    var doneTransition: (()->Void)?
+    var invites:Int!
+    var checkIns:Int!
+    var RSVPs:Int!
     @IBAction func DoneAction(_ sender: UIButton) {
         var nCell: pCell
 
+        EndTime = EndTimePicker.date
+        StartTime = StartTimePicker.date
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "dd MMM yyyy"
         Date = dateFormatter.string(from: StartDatePicker.date)
@@ -28,12 +34,16 @@ class PartyInputViewController: UIViewController,  UIImagePickerControllerDelega
         let starDate = self.Date
         let endTime = self.EndTime
         let components = Calendar.current.dateComponents([.hour, .minute], from: endTime!)
+            print(endTime)
+
         let endhour = components.hour
         let endminute =  components.minute
         let startTime = self.StartTime
-        let component = Calendar.current.dateComponents([.hour, .minute], from: startTime!)
-        let starthour = component.hour
-        let startminute = component.minute
+            print(startTime)
+
+        let componentA = Calendar.current.dateComponents([.hour, .minute], from: startTime!)
+        let starthour = componentA.hour
+        let startminute = componentA.minute
         let partyImage:UIImage = self.PartyImageView.image!
         let location:String = self.LocationInput.text!
         let desc:String = self.InviteInput.text!
@@ -54,24 +64,31 @@ class PartyInputViewController: UIViewController,  UIImagePickerControllerDelega
             nCell.documentID = did
             storeItems.append(nCell)
         }
+           
         }
         else{
             let name:String = self.NameInput.text!
             let starDate = self.Date
+            
             let endTime = self.EndTime
+            print(endTime)
             let components = Calendar.current.dateComponents([.hour, .minute], from: endTime!)
             let endhour = components.hour
+            print(endhour)
             let endminute =  components.minute
+            print(endminute)
             let startTime = self.StartTime
-            let component = Calendar.current.dateComponents([.hour, .minute], from: startTime!)
-            let starthour = component.hour
-            let startminute = component.minute
+            let componentA = Calendar.current.dateComponents([.hour, .minute], from: startTime!)
+            let starthour = componentA.hour
+            print(starthour)
+            let startminute = componentA.minute
+            print(startminute)
             let partyImage:UIImage = self.PartyImageView.image!
             let location:String = self.LocationInput.text!
             let desc:String = self.InviteInput.text!
             nCell = pCell(partyName: name, partyAddress: location, partyDescription: desc, documentID: "", startHour: starthour!, startMinute: startminute!, endHour: endhour!, endMinute: endminute!,  date: starDate!, isBouncer: false, image:self.PartyImageView.image!, isStale: false, isActive: false)
             let did = storeItems[currentRow].documentID
-            db.collection("Parties").document(did).setData(["Name": nCell.partyName, "Location":nCell.partyAddress, "Description" : nCell.partyDescription, "startMinute": startminute, "startHour":starthour, "endMinute":endminute, "endHour": endhour, "date": starDate])
+            db.collection("Parties").document(did).setData(["Name": nCell.partyName, "Location":nCell.partyAddress, "Description" : nCell.partyDescription, "startMinute": startminute, "startHour":starthour, "endMinute":endminute, "endHour": endhour, "date": starDate, "numInvites":self.invites, "numRsvps": self.RSVPs, "numCheckedIn":self.checkIns])
             let storageRef = storage.reference().child("PartyImages").child(did + ".png")
             
             if let imageData = UIImagePNGRepresentation(partyImage) {
@@ -88,9 +105,11 @@ class PartyInputViewController: UIViewController,  UIImagePickerControllerDelega
         
 
         }
+            currentCell = nCell
+
     }
-        currentCell = nCell
-    
+        self.dismiss(animated: true, completion: doneTransition)
+        
 }
     @IBOutlet weak var LocationInput: UITextField!
   
@@ -111,9 +130,6 @@ class PartyInputViewController: UIViewController,  UIImagePickerControllerDelega
         StartDatePicker.datePickerMode = .date
         StartTimePicker.datePickerMode = .time
         EndTimePicker.datePickerMode = .time
-        
-        EndTime = EndTimePicker.date
-        StartTime = StartTimePicker.date
         
         
 
