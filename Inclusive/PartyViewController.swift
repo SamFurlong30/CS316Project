@@ -13,6 +13,8 @@ import FirebaseCore
 import FBSDKLoginKit
 import FacebookCore
 import FirebaseFirestore
+let imageCache = NSCache<NSString, UIImage>()
+
 var isInviteMode: Bool = false
 struct pCell{
     var partyName: String;
@@ -28,7 +30,7 @@ struct pCell{
     var image: UIImage;
     var isStale: Bool;
     var isActive: Bool;
-
+    var isCoHost: Bool;
 
     
 }
@@ -70,17 +72,20 @@ class PartyViewController: UIViewController,UITableViewDelegate, UITableViewData
             filteredItems = items.filter { $0.isActive }
             
         case 1:
-            filteredItems = items.filter{ !$0.isStale && !$0.isActive }
+            filteredItems = items.filter{ !$0.isStale && !$0.isActive  }
         case 2:
             filteredItems = items.filter{ $0.isStale }
         default:
             return
         }
         if(self.SegmentHostFilter.selectedSegmentIndex==0){
-            filteredItems = filteredItems.filter{!$0.isBouncer}
+            filteredItems = filteredItems.filter{!$0.isBouncer && !$0.isCoHost}
         }
-        else{
+        else if(self.SegmentHostFilter.selectedSegmentIndex==1){
             filteredItems = filteredItems.filter{$0.isBouncer}
+        }
+        else if(self.SegmentHostFilter.selectedSegmentIndex==2){
+            filteredItems = filteredItems.filter{$0.isCoHost}
 
         }
         TableView.reloadData()
@@ -221,6 +226,7 @@ class PartyViewController: UIViewController,UITableViewDelegate, UITableViewData
                     transition.timingFunction = CAMediaTimingFunction(name:kCAMediaTimingFunctionEaseInEaseOut)
                     self.view.window!.layer.add(transition, forKey: kCATransition)
                     let party = filteredItems[swipedIndexPath.row]
+                    
                     partyView.partyInfo = party
                     self.present(partyView, animated:false, completion:nil)
                     partyView.currentRow = swipedIndexPath.row
@@ -233,6 +239,7 @@ class PartyViewController: UIViewController,UITableViewDelegate, UITableViewData
                         //hide bouncers and invitees button if party is active
                         partyView.ManageBouncers.isHidden = true
                         partyView.ManageInvitees.isHidden = true
+                        partyView.ManageCohosts.isHidden = true
                     }
                     if(party.startMinute < 10){
                         partyView.PartyStartTime.text = "Start Time:" + String(party.startHour) + ":0" + String(party.startMinute)
@@ -269,12 +276,12 @@ class PartyViewController: UIViewController,UITableViewDelegate, UITableViewData
         if(storeItems.count>0){
         items = storeItems
         filteredItems = items
+        }
         self.Filter()
             
-        }
-        else{
+        
         self.getParties()
-        }
+        
 
 
         
@@ -304,6 +311,7 @@ class PartyViewController: UIViewController,UITableViewDelegate, UITableViewData
         }
         task.resume()
     }
+
     func jsonToPCell(party:[String:Any]){
         let description = party["Description"] as! String
         let name = party["Name"] as! String
@@ -314,9 +322,11 @@ class PartyViewController: UIViewController,UITableViewDelegate, UITableViewData
         let endMinute = party["endMinute"] as! Int
         let endHour = party["endHour"] as! Int
         let isActive = party["isActive"] as! Bool
+        print("isActive" +  String(isActive))
         let isStale = party["isStale"] as! Bool
         let partyID = party["partyId"] as! String
-        var myParty: pCell = pCell(partyName: name, partyAddress: location, partyDescription: description, documentID: partyID , startHour: startHour, startMinute: startMinute, endHour: endHour, endMinute: endMinute, date: date, isBouncer: party["hostType"] as! String != "host", image: UIImage(), isStale: isStale, isActive: isActive)
+    
+        var myParty: pCell = pCell(partyName: name, partyAddress: location, partyDescription: description, documentID: partyID , startHour: startHour, startMinute: startMinute, endHour: endHour, endMinute: endMinute, date: date, isBouncer: party["hostType"] as! String == "bouncer", image: UIImage(), isStale: isStale, isActive: isActive, isCoHost: party["hostType"] as! String == "coHost")
         DispatchQueue.main.sync() {
             // place code for main thread here
             self.Filter()
@@ -326,6 +336,17 @@ class PartyViewController: UIViewController,UITableViewDelegate, UITableViewData
             
         }
         let imageURL:String = party["partyId"] as! String + ".png"
+        if let cachedImage = imageCache.object(forKey: imageURL as NSString) {
+            myParty.image = cachedImage
+            print("endpoint hit and reload")
+            self.items = self.items.filter{$0.documentID != myParty.documentID}
+            self.items.append(myParty)
+            
+            storeItems = self.items
+            
+            self.Filter()
+        }
+        else{
         let pathReference = storage.reference(withPath: "PartyImages/"+imageURL)
         pathReference.getData(maxSize: 1024 * 1024 * 1024) { data, error in
             if let error = error {
@@ -336,10 +357,8 @@ class PartyViewController: UIViewController,UITableViewDelegate, UITableViewData
             }
             else if data != nil {
                //  Data for "images/island.jpg" is returned
-                
                 myParty.image = UIImage(data: data! as Data)!
-                
-               
+                imageCache.setObject(myParty.image, forKey: imageURL as NSString)
                 print("endpoint hit and reload")
                 self.items = self.items.filter{$0.documentID != myParty.documentID}
                 self.items.append(myParty)
@@ -359,7 +378,7 @@ class PartyViewController: UIViewController,UITableViewDelegate, UITableViewData
                 print("no error but also no data")
             }
         }
-
+        }
     }
   
  

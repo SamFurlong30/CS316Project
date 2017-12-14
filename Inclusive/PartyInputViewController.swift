@@ -12,7 +12,6 @@ import FBSDKCoreKit
 
 class PartyInputViewController: UIViewController,  UIImagePickerControllerDelegate, UINavigationControllerDelegate{
     let imagePicker = UIImagePickerController()
-    @IBOutlet weak var MessageInput: UITextView!
     var isInitial: Bool = true
     var currentRow: Int = 0
     var currentCell: pCell!
@@ -20,7 +19,32 @@ class PartyInputViewController: UIViewController,  UIImagePickerControllerDelega
     var invites:Int!
     var checkIns:Int!
     var RSVPs:Int!
+    
+    
+    
+@IBAction func AddLocation(_ sender: Any) {
+        let storyBoard : UIStoryboard = UIStoryboard(name: "Main", bundle:nil)
+        let nextViewController = storyBoard.instantiateViewController(withIdentifier: "MapViewController") as! MapViewController
+        let transition = CATransition()
+        transition.duration = 0.5
+        transition.type = kCATransitionPush
+        transition.subtype = kCATransitionFromLeft
+        transition.timingFunction = CAMediaTimingFunction(name:kCAMediaTimingFunctionEaseInEaseOut)
+        view.window!.layer.add(transition, forKey: kCATransition)
+        self.present(nextViewController, animated:true, completion:nil)
+        nextViewController.complete = {
+            if let myString = nextViewController.pointAnnotation?.title {
+                self.LocationInput.text = myString
+                print("setLocationInput")
+            }
+            print("no location")
+        
+    }
+    
+    }
     @IBAction func DoneAction(_ sender: UIButton) {
+        self.dismiss(animated: true, completion: doneTransition)
+
         var nCell: pCell
 
         EndTime = EndTimePicker.date
@@ -28,7 +52,7 @@ class PartyInputViewController: UIViewController,  UIImagePickerControllerDelega
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "dd MMM yyyy"
         Date = dateFormatter.string(from: StartDatePicker.date)
-        if(isInitial == true){
+        if(isInitial){
         let name:String = self.NameInput.text!
            
         let starDate = self.Date
@@ -47,10 +71,10 @@ class PartyInputViewController: UIViewController,  UIImagePickerControllerDelega
         let partyImage:UIImage = self.PartyImageView.image!
         let location:String = self.LocationInput.text!
         let desc:String = self.InviteInput.text!
-            nCell = pCell(partyName: name, partyAddress: location, partyDescription: desc, documentID: "", startHour: starthour!, startMinute: startminute!, endHour: endhour!, endMinute: endminute!,  date: starDate!, isBouncer: false, image: self.PartyImageView.image!, isStale: false, isActive: false)
+            nCell = pCell(partyName: name, partyAddress: location, partyDescription: desc, documentID: "", startHour: starthour!, startMinute: startminute!, endHour: endhour!, endMinute: endminute!,  date: starDate!, isBouncer: false, image: self.PartyImageView.image!, isStale: false, isActive: false, isCoHost: false)
         let ref = db.collection("Hosts").document(FBSDKAccessToken.current().userID).collection("Party").addDocument(data: ["hostType":"Owner"])
         let did = ref.documentID
-        db.collection("Parties").document(did).setData(["Name": nCell.partyName, "Location":nCell.partyAddress, "Description" : nCell.partyDescription, "startMinute": startminute, "startHour":starthour, "endMinute":endminute, "endHour": endhour, "date": starDate])
+            db.collection("Parties").document(did).setData(["Name": nCell.partyName, "Location":nCell.partyAddress, "Description" : nCell.partyDescription, "startMinute": startminute, "startHour":starthour, "endMinute":endminute, "endHour": endhour, "date": starDate, "numInvites": 0, "numRsvps": 0, "numCheckedIn": 0])
         let storageRef = storage.reference().child("PartyImages").child(did + ".png")
         
         if let imageData = UIImagePNGRepresentation(partyImage) {
@@ -64,8 +88,8 @@ class PartyInputViewController: UIViewController,  UIImagePickerControllerDelega
             nCell.documentID = did
             storeItems.append(nCell)
         }
-           
-        }
+}
+        
         else{
             let name:String = self.NameInput.text!
             let starDate = self.Date
@@ -86,9 +110,9 @@ class PartyInputViewController: UIViewController,  UIImagePickerControllerDelega
             let partyImage:UIImage = self.PartyImageView.image!
             let location:String = self.LocationInput.text!
             let desc:String = self.InviteInput.text!
-            nCell = pCell(partyName: name, partyAddress: location, partyDescription: desc, documentID: "", startHour: starthour!, startMinute: startminute!, endHour: endhour!, endMinute: endminute!,  date: starDate!, isBouncer: false, image:self.PartyImageView.image!, isStale: false, isActive: false)
+            nCell = pCell(partyName: name, partyAddress: location, partyDescription: desc, documentID: "", startHour: starthour!, startMinute: startminute!, endHour: endhour!, endMinute: endminute!,  date: starDate!, isBouncer: false, image:self.PartyImageView.image!, isStale: false, isActive: false, isCoHost: false)
             let did = storeItems[currentRow].documentID
-            db.collection("Parties").document(did).setData(["Name": nCell.partyName, "Location":nCell.partyAddress, "Description" : nCell.partyDescription, "startMinute": startminute, "startHour":starthour, "endMinute":endminute, "endHour": endhour, "date": starDate, "numInvites":self.invites, "numRsvps": self.RSVPs, "numCheckedIn":self.checkIns])
+            db.collection("Parties").document(currentCell.documentID).setData(["Name": nCell.partyName, "Location":nCell.partyAddress, "Description" : nCell.partyDescription, "startMinute": startminute, "startHour":starthour, "endMinute":endminute, "endHour": endhour, "date": starDate, "numInvites":self.invites, "numRsvps": self.RSVPs, "numCheckedIn":self.checkIns])
             let storageRef = storage.reference().child("PartyImages").child(did + ".png")
             
             if let imageData = UIImagePNGRepresentation(partyImage) {
@@ -105,10 +129,10 @@ class PartyInputViewController: UIViewController,  UIImagePickerControllerDelega
         
 
         }
+}
             currentCell = nCell
 
-    }
-        self.dismiss(animated: true, completion: doneTransition)
+    
         
 }
     @IBOutlet weak var LocationInput: UITextField!
@@ -128,8 +152,12 @@ class PartyInputViewController: UIViewController,  UIImagePickerControllerDelega
         imagePicker.delegate = self
         
         StartDatePicker.datePickerMode = .date
+        StartDatePicker.setValue(UIColor.green, forKeyPath: "textColor")
+
         StartTimePicker.datePickerMode = .time
         EndTimePicker.datePickerMode = .time
+        StartTimePicker.setValue(UIColor.green, forKeyPath: "textColor")
+        EndTimePicker.setValue(UIColor.green, forKeyPath: "textColor")
         
         
 

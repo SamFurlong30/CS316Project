@@ -35,6 +35,7 @@
 		BCA770891FC22AD900085726 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BCA7707F1FC22AD900085726 /* Main.storyboard */; };
 		BCA7708D1FC22AD900085726 /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = BCA770841FC22AD900085726 /* Info.plist */; };
 		BCEF06BB1FDE3FA100AD9A18 /* InduvidualPartyViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCEF06BA1FDE3FA100AD9A18 /* InduvidualPartyViewController.swift */; };
+		BCEF06BD1FE2291400AD9A18 /* MapViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCEF06BC1FE2291400AD9A18 /* MapViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -90,6 +91,7 @@
 		BCA770801FC22AD900085726 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		BCA770841FC22AD900085726 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		BCEF06BA1FDE3FA100AD9A18 /* InduvidualPartyViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InduvidualPartyViewController.swift; sourceTree = "<group>"; };
+		BCEF06BC1FE2291400AD9A18 /* MapViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapViewController.swift; sourceTree = "<group>"; };
 		F4998D7A76D7EA1A09EB7C27 /* Pods_Inclusive.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Inclusive.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		F891A2F9FC9B50D0B22488B6 /* Pods-InclusiveUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-InclusiveUITests.release.xcconfig"; path = "Pods/Target Support Files/Pods-InclusiveUITests/Pods-InclusiveUITests.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -217,6 +219,7 @@
 				BCA7707C1FC22AD900085726 /* Assets.xcassets */,
 				BC32D78E1FD0B1820092FD9F /* PartyInputViewController.swift */,
 				BCEF06BA1FDE3FA100AD9A18 /* InduvidualPartyViewController.swift */,
+				BCEF06BC1FE2291400AD9A18 /* MapViewController.swift */,
 			);
 			name = Inclusive;
 			sourceTree = "<group>";
@@ -558,6 +561,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BCEF06BD1FE2291400AD9A18 /* MapViewController.swift in Sources */,
 				BC32D78B1FCD03E10092FD9F /* FriendNotInvitedCell.swift in Sources */,
 				BC32D7851FCBA7080092FD9F /* AppDelegate.swift in Sources */,
 				BC32D7831FCBA4AA0092FD9F /* ViewController.swift in Sources */,

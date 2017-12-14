@@ -21,6 +21,19 @@ class InduvidualPartyViewController: UIViewController, UIPopoverPresentationCont
         var email: String!
         var type: String!
     }
+    @IBAction func ManageCoHosts(_ sender: Any) {
+        let storyBoard : UIStoryboard = UIStoryboard(name: "Main", bundle:nil)
+        let nextViewController = storyBoard.instantiateViewController(withIdentifier: "SelectFriendsViewController") as! SelectFriendsViewController
+        nextViewController.currentDocument = partyInfo.documentID
+        nextViewController.isInviteMode = 2
+        nextViewController.currentDocument = self.partyInfo.documentID
+        nextViewController.donePressed = {
+            self.viewDidLoad()
+        }
+        self.present(nextViewController, animated:true, completion:nil)
+    }
+    
+    
     @IBAction func TypeSelector(_ sender: Any) {
         self.Filter()
     }
@@ -46,7 +59,7 @@ class InduvidualPartyViewController: UIViewController, UIPopoverPresentationCont
         let storyBoard : UIStoryboard = UIStoryboard(name: "Main", bundle:nil)
         let nextViewController = storyBoard.instantiateViewController(withIdentifier: "SelectFriendsViewController") as! SelectFriendsViewController
         nextViewController.currentDocument = partyInfo.documentID
-        nextViewController.isInviteMode = true
+        nextViewController.isInviteMode = 0
         nextViewController.currentDocument = self.partyInfo.documentID
         nextViewController.donePressed = {
             self.viewDidLoad()
@@ -72,7 +85,7 @@ class InduvidualPartyViewController: UIViewController, UIPopoverPresentationCont
         let storyBoard : UIStoryboard = UIStoryboard(name: "Main", bundle:nil)
         let nextViewController = storyBoard.instantiateViewController(withIdentifier: "SelectFriendsViewController") as! SelectFriendsViewController
         nextViewController.currentDocument = partyInfo.documentID
-        nextViewController.isInviteMode = false
+        nextViewController.isInviteMode = 1
         nextViewController.donePressed = {
             self.viewDidLoad()
 
@@ -107,7 +120,8 @@ class InduvidualPartyViewController: UIViewController, UIPopoverPresentationCont
         if (swipe as? UISwipeGestureRecognizer) != nil{
             if(swipe.direction == UISwipeGestureRecognizerDirection.up){
                 print("up")
-                if(!partyInfo.isBouncer || !partyInfo.isActive || !partyInfo.isStale){
+                if(!partyInfo.isBouncer || !partyInfo.isActive || !partyInfo.isStale || !partyInfo.isCoHost){
+                    print("fuck why is editing allowed")
                 self.presentAndRecordInput()
                 }
 
@@ -215,6 +229,7 @@ class InduvidualPartyViewController: UIViewController, UIPopoverPresentationCont
       
         
     }
+    @IBOutlet weak var ManageCohosts: UIButton!
     func presentAndRecordInput(){
         
         let storyboard : UIStoryboard = UIStoryboard(name: "Main", bundle: nil)
@@ -223,6 +238,8 @@ class InduvidualPartyViewController: UIViewController, UIPopoverPresentationCont
         self.InputPopover.invites = self.invites
         self.InputPopover.RSVPs = self.RSVPs
         self.InputPopover.checkIns = self.checkIns
+        InputPopover.isInitial = false
+        InputPopover.currentCell = partyInfo
         InputPopover.doneTransition = {
             self.invites = self.InputPopover.invites
             self.RSVPs = self.InputPopover.RSVPs
@@ -262,7 +279,6 @@ class InduvidualPartyViewController: UIViewController, UIPopoverPresentationCont
         self.present(InputPopover, animated: true, completion: nil)
         InputPopover.DoneButton.addTarget(self, action: #selector(doneAction), for: .touchUpInside)
 
-            InputPopover.isInitial = false
         
             let cell = partyInfo
             InputPopover.NameInput.text = cell?.partyName
@@ -338,6 +354,20 @@ class InduvidualPartyViewController: UIViewController, UIPopoverPresentationCont
                     print(namep)
 
                 }
+                let coHost = json!["coHost"] as! [[String:Any]]
+                print(coHost)
+                
+                for person in coHost {
+                    print("coHost")
+                    let namex = person["name"] as! String
+                    let emailx = person["email"] as! String
+                    let x = typedPerson(name: namex,
+                                        email: emailx,
+                                        type: "coHost")
+                    self.items.append(x)
+                    print(namex)
+                    
+                }
                 let invitedTo = json!["invitedTo"] as! [[String:Any]]
                 print(invitedTo)
                 for invitee in invitedTo {
@@ -384,7 +414,8 @@ class InduvidualPartyViewController: UIViewController, UIPopoverPresentationCont
             filteredItems = items.filter{ $0.type == "checkedIn" }
         case 3:
             filteredItems = items.filter{ $0.type == "bouncer" }
-
+        case 4:
+            filteredItems = items.filter{$0.type == "coHost"}
         default:
             return
         }

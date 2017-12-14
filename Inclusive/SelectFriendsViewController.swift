@@ -26,29 +26,36 @@ class SelectFriendsViewController: UIViewController, UITableViewDelegate, UITabl
     var donePressed:(()->Void)?
     let searchController = UISearchController(searchResultsController: nil)
     var currentDocument: String!
-    var isInviteMode: Bool!
-    
+    var isInviteMode: Int!
+    var startSelectedItems:[friend] = []
     @IBAction func DoneAction(_ sender: Any) {
     
         var requestString:String = ""
-        if(isInviteMode){
+        if(isInviteMode == 0){
             requestString = "https://us-central1-inclu-af7f5.cloudfunctions.net/addMembersToParty?uid="
-
         }
-        else{
+        else if (isInviteMode == 1){
             requestString = "https://us-central1-inclu-af7f5.cloudfunctions.net/addBouncersToParty?uid="
         }
-        
+        else if (isInviteMode == 2){
+             requestString = "https://us-central1-inclu-af7f5.cloudfunctions.net/addCoHostsToParty?uid="
+        }
         
         var ids: [String] = []
         
         for item in self.selectedItems {
             ids.append(item.fbID)
         }
+        var startIds: [String] = []
         
-        let json: [String:[Any]] = ["invitedTo": ids]     
-
+        for item in self.startSelectedItems {
+            startIds.append(item.fbID)
+        }
         
+        var jsonTotal: [String:Any]  = [:]
+        jsonTotal["initialMembers"] = startIds
+        jsonTotal["finalMembers"] = ids
+        print(jsonTotal)
         // create post request
         let url = URL(string: requestString + FBSDKAccessToken.current().userID + "&pid=" + self.currentDocument)!
         
@@ -58,18 +65,19 @@ class SelectFriendsViewController: UIViewController, UITableViewDelegate, UITabl
         request.setValue("application/json; charset=utf-8", forHTTPHeaderField: "Accept")        // the expected response is also JSON
         request.httpMethod = "POST"
         
-        request.httpBody = try! JSONSerialization.data(withJSONObject: json)
-        
+        request.httpBody = try! JSONSerialization.data(withJSONObject: jsonTotal)
+        print(request.httpBody)
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
             guard let data = data, error == nil else {
+                print("could not request to invite")
                 print(error)                                 // some fundamental network error
                 return
             }
-            
             do {
                 let responseObject = try JSONSerialization.jsonObject(with: data)
                 print(responseObject)
             } catch let jsonError {
+                print("hit this error")
                 print(jsonError)
                 print(String(data: data, encoding: .utf8))   // often the `data` contains informative description of the nature of the error, so let's look at that, too
             }
@@ -169,8 +177,6 @@ class SelectFriendsViewController: UIViewController, UITableViewDelegate, UITabl
         case 1:
 
             let cell: FriendInvitedCell = tableView.dequeueReusableCell(withIdentifier: "FriendInvitedCell", for: indexPath) as!FriendInvitedCell
-                print(indexPath.row)
-                print(selectedItems.count)
             let currentFriend = selectedItems[indexPath.row]
             cell.NameLabel!.text = currentFriend.name
                 cell.ProfilePic.image = currentFriend.pic.image
@@ -242,106 +248,40 @@ class SelectFriendsViewController: UIViewController, UITableViewDelegate, UITabl
                         let name = friendInfo["name"]
                         let id = friendInfo["id"]
                         var col:String
-                        if(self.isInviteMode){
+                        if(self.isInviteMode == 0 ){
                             col = "invitedTo"
                         }
-                        else{
+                        else if(self.isInviteMode == 1){
                             col = "Bouncers"
+                        }
+                        else{
+                            col = "coHosts"
 
                         }
-                        
-                    
-                        db.collection(col).document(self.currentDocument).collection("Invitees").getDocuments(){ (querySnapshot, error) in
+                        db.collection(col).document(self.currentDocument).collection("Invitees").addSnapshotListener{ (querySnapshot, error) in
                                 print("this be documents")
                             
-                            var flag: Bool = true
+                            var flag: Bool = false
                                 for i in querySnapshot!.documents {
+                                    print(i)
                                     //check to see if friend is already invitied
                                     if(i.documentID as String == id as! String ){
-                                        flag = false
-                                        if let imageString = ((friendInfo["picture"] as? [String: Any])?["data"] as? [String: Any])?["url"] as? String {
-                                            print(imageString)
-                                            let imageURL = URL(string: imageString)
-                                            print(imageURL)
-                                            // Define a download task. The download task will download the contents of the URL as a Data object and then you can do what you wish with that data.
-                                            let session = URLSession(configuration: .default)
-                                            print("download pic")
-                                            DispatchQueue.global(qos: .userInitiated).async {
-                                                
-                                                let imageData:NSData = NSData(contentsOf: imageURL!)!
-                                                
-                                                print("task queued")
-                                                // When from background thread, UI needs to be updated on main_queue
-                                                DispatchQueue.main.async {
-                                                    let imageView = UIImageView(frame: CGRect(x:0, y:0, width:200, height:200))
-                                                    imageView.center = self.view.center
-                                                    let image = UIImage(data: imageData as Data)
-                                                    imageView.image = image
-                                                    imageView.contentMode = UIViewContentMode.scaleAspectFit
-                                                    print("done")
-                                                    self.selectedItems.append(friend(name: name as! String, id: id as! String, pic: imageView))
-                                                    self.FriendsTable.reloadData()
-
-                                                    print("appended one item to selectedItems")
-                                                    
-                                                }
-                                            }
-                                            //Download image from imageURL
-                                        }
-                                       
+                                        flag = true
+                                        self.addToItems(friendInfo: friendInfo, isSelected: flag)
                                     }
-                                  
                                     //add friend to selected
                             }
-                            if(flag){
-                                if let imageString = ((friendInfo["picture"] as? [String: Any])?["data"] as? [String: Any])?["url"] as? String {
-                                    print(imageString)
-                                    let imageURL = URL(string: imageString)
-                                    print(imageURL)
-                                    // Define a download task. The download task will download the contents of the URL as a Data object and then you can do what you wish with that data.
-                                    let session = URLSession(configuration: .default)
-                                    print("download pic")
-                                    DispatchQueue.global(qos: .userInitiated).async {
-                                        
-                                      
-                                        DispatchQueue.main.async {
-                                            let imageData:NSData = NSData(contentsOf: imageURL!)!
-                                            let imageView = UIImageView(frame: CGRect(x:0, y:0, width:200, height:200))
-                                            imageView.center = self.view.center
-                                            print("task queued")
-                                            // When from background thread, UI needs to be updated on main_queue
-                                            let image = UIImage(data: imageData as Data)
-                                            imageView.image = image
-                                            imageView.contentMode = UIViewContentMode.scaleAspectFit
-                                            print("done")
-                                            self.items.append(friend(name: name as! String, id: id as! String, pic: imageView))
-                                            print("Appended to Items")
-
-                                        }
-                                    }
-                                    //Download image from imageURL
-                                }
-                                
-
+                            if(!flag){
+                                self.addToItems(friendInfo: friendInfo, isSelected: flag)
                                 self.FriendsTable.reloadData()
-
-                        
-                            
                             }
                         }
                         self.filteredItems = self.items
-                        
                         print("trying to grab picture")
                         print(friendInfo)
-                    
-                        
-                       
-                     }
-
-                    
-                    
-                }
-            
+                    }
+                
+            }
                 
             }
         }
@@ -351,11 +291,54 @@ class SelectFriendsViewController: UIViewController, UITableViewDelegate, UITabl
       
     }
 
-  
+   
+    func addToItems(friendInfo:NSDictionary, isSelected:Bool){
+        let name = friendInfo["name"]
+        let id = friendInfo["id"]
+        if let imageString = ((friendInfo["picture"] as? [String: Any])?["data"] as? [String: Any])?["url"] as? String {
+            print(imageString)
+            let imageURL = URL(string: imageString)
+            print(imageURL)
+            // Define a download task. The download task will download the contents of the URL as a Data object and then you can do what you wish with that data.
+            let session = URLSession(configuration: .default)
+            print("download pic")
+            DispatchQueue.global(qos: .userInitiated).async {
+                
+                
+                DispatchQueue.main.async {
+                    let imageData:NSData = NSData(contentsOf: imageURL!)!
+                    let imageView = UIImageView(frame: CGRect(x:0, y:0, width:200, height:200))
+                    imageView.center = self.view.center
+                    print("task queued")
+                    // When from background thread, UI needs to be updated on main_queue
+                    let image = UIImage(data: imageData as Data)
+                    imageView.image = image
+                    imageView.contentMode = UIViewContentMode.scaleAspectFit
+                    print("done")
+                    if(isSelected){
+                        self.selectedItems.append(friend(name: name as! String, id: id as! String, pic: imageView))
+                        self.startSelectedItems.append(friend(name: name as! String, id: id as! String, pic: imageView))
+
+                    }
+                    else{
+                        self.items.append(friend(name: name as! String, id: id as! String, pic: imageView))
+                        
+
+                    }
+                    print("Appended to Items")
+                    
+                }
+            }
+            //Download image from imageURL
+        }
+    }
+    func getPhoto(){
+        
+    }
     @IBOutlet weak var EmailField: UITextField!
     
     @IBAction func EmailButton(_ sender: Any) {
-        selectedItems.append(friend(name: EmailField.text!, id: "nahfam", pic: UIImageView()))
+        selectedItems.append(friend(name: EmailField.text!, id: EmailField.text!, pic: UIImageView()))
         FriendsTable.reloadData()
         
     }
